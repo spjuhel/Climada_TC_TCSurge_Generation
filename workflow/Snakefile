@@ -1,4 +1,14 @@
-# Main entrypoint of the workflow. 
-# Please follow the best practices: 
+# Main entrypoint of the workflow.
+# Please follow the best practices:
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
-# in particular regarding the standardized folder structure mentioned there. 
+# in particular regarding the standardized folder structure mentioned there.
+
+rule create_centroids:
+    output:
+        "global_centroids.hdf5"
+    log:
+        "logs/create_centroids.log"
+    resources:
+        mem_mb=12000
+    script:
+        "scripts/create_centroids.py"
