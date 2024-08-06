@@ -2,6 +2,10 @@
 # Please follow the best practices:
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there.
+start_years = list(range(1980, 2024, 5))
+periods = [(str(start), str(min(start + 4, 2023))) for start in start_years]
+# Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
+basins = ["NA", "SA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
 rule create_centroids:
     output:
@@ -15,14 +19,15 @@ rule create_centroids:
     script:
         "scripts/create_centroids.py"
 
-rule create_basin_years:
+rule process_5_year_period:
     input:
         global_cent = "global_centroids.hdf5"
     output:
-        "basins/{basin}_{years}.hdf5"
+        "basins/{basin}_{start}_{end}.hdf5"
     wildcard_constraints:
         basin="[A-Z]+",
-        years="\d{4}_\d{4}"
+        start="[0-9]{4}",
+        end="[0-9]{4}"
     conda:
         "climada_env"
     params:
@@ -31,20 +36,32 @@ rule create_basin_years:
     resources:
         mem_mb_per_cpu=12000
     log:
-        "logs/create_{basin}_{years}.log"
+        "logs/create_{basin}_{start}_{end}.log"
     script:
-        "scripts/create_basin_year.py"
+        "scripts/create_basin_5_year_period.py"
 
-rule concat_basin:
+rule concatenate_all_periods:
     input:
-        "basins/{basin}_{years}.hdf5"
+        expand("basins/{basin}_{start}_{end}.hdf5", basin="{basin}", start=[p[0] for p in periods], end=[p[1] for p in periods])
     output:
-        "basins/{basin}_entire_period.hdf5"
+        "basins/concatenated/{basin}_full_1980_2023.hdf5"
+    wildcard_constraints:
+        basin="[A-Z]+"
     conda:
         "climada_env"
-    resources:
-        mem_mb_per_cpu=12000
     log:
-        "logs/concat_basin_{basin}.log"
+        "logs/concatenate_{basin}.log"
     script:
-        "scripts/contat_basin.py"
+        "scripts/concatenate_all_periods.py"
+
+rule concatenate_all_basins:
+    input:
+        expand("basins/concatenated/{basin}_1980_2023.hdf5", basin=basins)
+    output:
+        "basins/all_basins_1980_2023.hdf5"
+    conda:
+        "climada_env"
+    log:
+        "logs/concatenate_all_basins.log"
+    script:
+        "scripts/concatenate_all_basins.py"
