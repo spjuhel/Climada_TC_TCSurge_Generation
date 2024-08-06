@@ -30,7 +30,7 @@ rule create_basin_years:
     log:
         "logs/create_{basin}_{years}.log"
     script:
-        "scripts/create_basin_years.py"
+        "scripts/create_basin_year.py"
 
 rule concat_basin:
     input:

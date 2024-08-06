@@ -2,7 +2,6 @@ import sys
 import logging, traceback
 
 from climada.hazard import TCTracks, Centroids, TropCyclone
-from snakemake.script import snakemake
 
 logging.basicConfig(
     filename=snakemake.log[0],

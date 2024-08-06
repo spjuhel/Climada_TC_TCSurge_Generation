@@ -2,7 +2,6 @@ import sys
 import logging, traceback
 
 from climada.hazard import Centroids
-from snakemake.script import snakemake
 
 def create_litpop_matching_centroids(res=0.041666659999975764):
     centroids_land = Centroids.from_pnt_bounds(
