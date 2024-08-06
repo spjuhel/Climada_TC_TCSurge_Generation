@@ -44,7 +44,7 @@ rule concatenate_all_periods:
     input:
         expand("basins/{basin}_{start}_{end}.hdf5", basin="{basin}", start=[p[0] for p in periods], end=[p[1] for p in periods])
     output:
-        "basins/concatenated/{basin}_full_1980_2023.hdf5"
+        "basins/{basin}_full_1980_2023.hdf5"
     wildcard_constraints:
         basin="[A-Z]+"
     conda:
@@ -56,7 +56,7 @@ rule concatenate_all_periods:
 
 rule concatenate_all_basins:
     input:
-        expand("basins/concatenated/{basin}_1980_2023.hdf5", basin=basins)
+        expand("basins/{basin}_full_1980_2023.hdf5", basin=basins)
     output:
         "basins/all_basins_1980_2023.hdf5"
     conda:
