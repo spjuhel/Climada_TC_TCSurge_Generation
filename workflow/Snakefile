@@ -20,6 +20,9 @@ rule create_basin_years:
         global_cent = "global_centroids.hdf5"
     output:
         "basins/{basin}_{years}.hdf5"
+    wildcard_constraints:
+        basin="[A-Z]+",
+        years="\d{4}_\d{4}"
     conda:
         "climada_env"
     params:
