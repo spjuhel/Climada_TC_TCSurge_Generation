@@ -42,7 +42,7 @@ rule process_5_year_period:
 
 rule concatenate_all_periods:
     input:
-        expand("basins/{basin}_{start}_{end}.hdf5", basin="{basin}", start=[p[0] for p in periods], end=[p[1] for p in periods])
+        expand("basins/{basin}_{start}_{end}.hdf5", zip, basin="{basin}", start=[p[0] for p in periods], end=[p[1] for p in periods])
     output:
         "basins/{basin}_full_1980_2023.hdf5"
     wildcard_constraints:
