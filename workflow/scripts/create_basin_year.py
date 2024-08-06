@@ -35,7 +35,7 @@ sys.excepthook = handle_exception
 logger.info(f"Getting TC tracks for genesis basin {snakemake.wildcards.basin} for {snakemake.wildcards.years}")
 
 year_start, year_end = snakemake.wildcards.years.split("_")
-tracks = TCTracks.from_ibtracs_netcdf(year_range=(year_start, year_end), genesis_basin=snakemake.wildcards.basin)
+tracks = TCTracks.from_ibtracs_netcdf(year_range=(int(year_start), int(year_end)), genesis_basin=snakemake.wildcards.basin)
 
 logger.info(f"Loading global centroids from {snakemake.input.global_cent}")
 cent = Centroids.from_hdf5(snakemake.input.global_cent)
