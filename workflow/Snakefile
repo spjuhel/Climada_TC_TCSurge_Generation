@@ -9,6 +9,39 @@ rule create_centroids:
     log:
         "logs/create_centroids.log"
     resources:
-        mem_mb=12000
+        mem_mb_per_cpu=12000
+    conda:
+        "climada_env"
     script:
         "scripts/create_centroids.py"
+
+rule create_basin_years:
+    input:
+        global_cent = "global_centroids.hdf5"
+    output:
+        "basins/{basin}_{years}.hdf5"
+    conda:
+        "climada_env"
+    params:
+        buf=5,
+        timestep=0.5
+    resources:
+        mem_mb_per_cpu=12000
+    log:
+        "logs/create_{basin}_{years}.log"
+    script:
+        "scripts/create_basin_years.py"
+
+rule concat_basin:
+    input:
+        "basins/{basin}_{years}.hdf5"
+    output:
+        "basins/{basin}_entire_period.hdf5"
+    conda:
+        "climada_env"
+    resources:
+        mem_mb_per_cpu=12000
+    log:
+        "logs/concat_basin_{basin}.log"
+    script:
+        "scripts/contat_basin.py"

@@ -2,6 +2,7 @@ import sys
 import logging, traceback
 
 from climada.hazard import Centroids
+from snakemake.script import snakemake
 
 def create_litpop_matching_centroids(res=0.041666659999975764):
     centroids_land = Centroids.from_pnt_bounds(
@@ -46,7 +47,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_exception
 
 
-logger.info(f"Creating global centroids ")
+logger.info(f"Creating global centroids")
 cent = create_litpop_matching_centroids()
 logger.info(f"Writing to {snakemake.output[0]}")
 cent.write_hdf5(snakemake.output[0])
