@@ -34,7 +34,7 @@ rule process_5_year_period:
         buf=5,
         timestep=0.5
     resources:
-        mem_mb_per_cpu=12000
+        mem_mb_per_cpu=12000,
         runtime=240
     log:
         "logs/create_{basin}_{start}_{end}.log"
