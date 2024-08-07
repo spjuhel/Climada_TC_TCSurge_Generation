@@ -1,5 +1,6 @@
 import sys
 import logging, traceback
+from pathlib import Path
 
 from climada.hazard import TCTracks, Centroids, TropCyclone
 
@@ -36,17 +37,22 @@ logger.info(f"Getting TC tracks for genesis basin {snakemake.wildcards.basin} fo
 
 tracks = TCTracks.from_ibtracs_netcdf(year_range=(int(snakemake.wildcards.start), int(snakemake.wildcards.end)), genesis_basin=snakemake.wildcards.basin)
 
-logger.info(f"Loading global centroids from {snakemake.input.global_cent}")
-cent = Centroids.from_hdf5(snakemake.input.global_cent)
+if not tracks.data:
+    logger.info(f"No tracks found for this period. Returning empty file")
+    Path(snakemake.output[0]).touch()
 
-logger.info(f"Selecting centroids extent from tracks with buffer={snakemake.params.buf}")
-cent_tracks = cent.select(extent=tracks.get_extent(snakemake.params.buf))
+else:
+    logger.info(f"Loading global centroids from {snakemake.input.global_cent}")
+    cent = Centroids.from_hdf5(snakemake.input.global_cent)
 
-logger.info(f"Interpolating tracks to {snakemake.params.timestep} hours steps")
-tracks.equal_timestep(snakemake.params.timestep)
+    logger.info(f"Selecting centroids extent from tracks with buffer={snakemake.params.buf}")
+    cent_tracks = cent.select(extent=tracks.get_extent(snakemake.params.buf))
 
-logger.info(f"Computing TC wind-fields")
-tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks)
+    logger.info(f"Interpolating tracks to {snakemake.params.timestep} hours steps")
+    tracks.equal_timestep(snakemake.params.timestep)
 
-logger.info(f"Writing to {snakemake.output[0]}")
-tc.write_hdf5(snakemake.output[0])
+    logger.info(f"Computing TC wind-fields")
+    tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks)
+
+    logger.info(f"Writing to {snakemake.output[0]}")
+    tc.write_hdf5(snakemake.output[0])
