@@ -35,7 +35,7 @@ sys.excepthook = handle_exception
 
 logger.info(f"Getting TC tracks for genesis basin {snakemake.wildcards.basin} for {snakemake.wildcards.start}-{snakemake.wildcards.end}")
 
-tracks = TCTracks.from_ibtracs_netcdf(year_range=(int(snakemake.wildcards.start), int(snakemake.wildcards.end)), genesis_basin=snakemake.wildcards.basin)
+tracks = TCTracks.from_ibtracs_netcdf(year_range=(int(snakemake.wildcards.start), int(snakemake.wildcards.end)), genesis_basin=snakemake.wildcards.basin, estimate_missing=True)
 
 if not tracks.data:
     logger.info(f"No tracks found for this period. Returning empty file")

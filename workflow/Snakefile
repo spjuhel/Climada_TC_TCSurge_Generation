@@ -35,6 +35,7 @@ rule process_5_year_period:
         timestep=0.5
     resources:
         mem_mb_per_cpu=12000
+        runtime=240
     log:
         "logs/create_{basin}_{start}_{end}.log"
     script:

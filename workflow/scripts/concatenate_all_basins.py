@@ -34,5 +34,5 @@ sys.excepthook = handle_exception
 
 logger.info(f"Regrouping all basins")
 tcs = TropCyclone.concat([TropCyclone.from_hdf5(tcfile) for tcfile in snakemake.input])
-logger.info(f"Writing to {snakemake.output}")
-tcs.write_hdf5(snakemake.output)
+logger.info(f"Writing to {snakemake.output[0]}")
+tcs.write_hdf5(snakemake.output[0])
