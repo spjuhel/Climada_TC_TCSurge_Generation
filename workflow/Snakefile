@@ -2,8 +2,8 @@
 # Please follow the best practices:
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there.
-start_years = list(range(1980, 2024, 5))
-periods = [(str(start), str(min(start + 4, 2023))) for start in start_years]
+start_years = list(range(1980, 2024, 10))
+periods = [(str(start), str(min(start + 9, 2023))) for start in start_years]
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 basins = ["NA", "SA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
