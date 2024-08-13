@@ -104,7 +104,7 @@ rule concatenate_all_years:
     wildcard_constraints:
         basin="[A-Z]+"
     resources:
-        mem_mb_per_cpu=lambda attempt: 2000 * attempt, 300),
+        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
     conda:
         "climada_env_TC"
     log:
@@ -120,7 +120,7 @@ rule concatenate_all_basins:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
+        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
     log:
         "logs/concatenate_all_basins.log"
     script:
