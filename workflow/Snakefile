@@ -16,7 +16,7 @@ rule create_centroids:
     resources:
         mem_mb_per_cpu=12000
     conda:
-        "climada_env"
+        "climada_env_TC"
     script:
         "scripts/create_centroids.py"
 
@@ -29,7 +29,7 @@ rule tracks_basin_year:
         basin="[A-Z]+",
         year="[0-9]{4}",
     conda:
-        "climada_env"
+        "climada_env_TC"
     resources:
         mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
         runtime=240
@@ -50,7 +50,7 @@ rule synth_tracks_basin_year:
     params:
         nsynth=25,
     conda:
-        "climada_env"
+        "climada_env_TC"
     resources:
         mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
         runtime=240
@@ -68,7 +68,7 @@ rule tcs_basin_year:
     params:
         buf=5
     conda:
-        "climada_env"
+        "climada_env_TC"
     resources:
         mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
         runtime=240
@@ -95,7 +95,7 @@ rule concatenate_all_years:
     resources:
         mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
     conda:
-        "climada_env"
+        "climada_env_TC"
     log:
         "logs/concatenate_{basin}.log"
     script:
@@ -107,7 +107,7 @@ rule concatenate_all_basins:
     output:
         "basins/all_basins_1980_2023.hdf5"
     conda:
-        "climada_env"
+        "climada_env_TC"
     resources:
         mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
     log:
