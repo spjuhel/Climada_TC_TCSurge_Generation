@@ -31,7 +31,7 @@ rule tracks_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
+        mem_mb_per_cpu=lambda wc, input, attempt: 8000 * attempt,
         runtime=240
     log:
         "logs/find_tracks_{basin}_{year}.log"
