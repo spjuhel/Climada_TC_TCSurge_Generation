@@ -70,7 +70,7 @@ rule tcs_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=8000,
+        mem_mb_per_cpu=24000,
         runtime=240
     log:
         "logs/generate_TCs_{basin}_{year}.log"
@@ -104,7 +104,7 @@ rule concatenate_all_years:
     wildcard_constraints:
         basin="[A-Z]+"
     resources:
-        mem_mb_per_cpu=8000,
+        mem_mb_per_cpu=24000,
     conda:
         "climada_env_TC"
     log:
@@ -114,13 +114,13 @@ rule concatenate_all_years:
 
 rule concatenate_all_basins:
     input:
-        expand("basins/{basin}_full_1980_2023.hdf5", basin=basins)
+        expand("tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5", basin=basins)
     output:
-        "basins/all_basins_1980_2023.hdf5"
+        "tropcyc/all_basins_1980_2023.hdf5"
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=8000,
+        mem_mb_per_cpu=24000,
     log:
         "logs/concatenate_all_basins.log"
     script:
