@@ -31,7 +31,8 @@ rule tracks_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda wc, input, attempt: 8000 * attempt,
+        mem_mb_per_cpu=lambda wc, input, attempt: 10000 * attempt,
+        thread=8,
         runtime=240
     log:
         "logs/find_tracks_{basin}_{year}.log"
@@ -83,6 +84,17 @@ rule surges_basin_year:
         "tropcyc/{basin}/TCs_{basin}_{year}.hdf5"
     output:
         "surge/{basin}/TCSurges_{basin}_{year}.hdf5"
+    params:
+        buf=5
+    conda:
+        "climada_env_TC"
+    resources:
+        mem_mb_per_cpu=lambda wc, input, attempt: max(120 * attempt * input.size_mb, 300),
+        runtime=240
+    log:
+        "logs/generate_TCs_{basin}_{year}.log"
+    script:
+        "scripts/generate_TCs_surges_basin_year.py"
 
 
 rule concatenate_all_years:
