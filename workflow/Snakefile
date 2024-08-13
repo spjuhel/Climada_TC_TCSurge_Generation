@@ -31,7 +31,7 @@ rule tracks_basin_year:
     conda:
         "climada_env"
     resources:
-        mem_mb_per_cpu=24000,
+        mem_mb_per_cpu=lambda wc, input: max(120 * attempt * input.size_mb, 300),
         runtime=240
     log:
         "logs/find_tracks_{basin}_{year}.log"
@@ -42,15 +42,17 @@ rule synth_tracks_basin_year:
     input:
         "tracks/{basin}/IBTracs_{basin}_{year}.hdf5"
     output:
-        "tracks/{basin}/IBTracs_synth{nsynth}_{basin}_{year}.hdf5"
+        "tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5"
     wildcard_constraints:
         nsynth="\d+",
         basin="[A-Z]+",
         year="[0-9]{4}",
+    params:
+        nsynth=25,
     conda:
         "climada_env"
     resources:
-        mem_mb_per_cpu=24000,
+        mem_mb_per_cpu=lambda wc, input: max(120 * attempt * input.size_mb, 300),
         runtime=240
     log:
         "logs/generate_synths_tracks_{basin}_{year}.log"
@@ -59,12 +61,22 @@ rule synth_tracks_basin_year:
 
 rule tcs_basin_year:
     input:
-        "tracks/{basin}/IBTracs_synth{nsynth}_{basin}_{year}.hdf5",
-        "global_centroids.hdf5"
+        tracks = "tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5",
+        centroids = "global_centroids.hdf5"
     output:
         "tropcyc/{basin}/TCs_{basin}_{year}.hdf5"
     params:
         buf=5
+    conda:
+        "climada_env"
+    resources:
+        mem_mb_per_cpu=lambda wc, input: max(120 * attempt * input.size_mb, 300),
+        runtime=240
+    log:
+        "logs/generate_TCs_{basin}_{year}.log"
+    script:
+        "scripts/generate_TCs_basin_year.py"
+
 
 rule surges_basin_year:
     input:
@@ -81,7 +93,7 @@ rule concatenate_all_years:
     wildcard_constraints:
         basin="[A-Z]+"
     resources:
-        mem_mb_per_cpu=12000,
+        mem_mb_per_cpu=lambda wc, input: max(120 * attempt * input.size_mb, 300),
     conda:
         "climada_env"
     log:
@@ -97,7 +109,7 @@ rule concatenate_all_basins:
     conda:
         "climada_env"
     resources:
-        mem_mb_per_cpu=24000,
+        mem_mb_per_cpu=lambda wc, input: max(120 * attempt * input.size_mb, 300),
     log:
         "logs/concatenate_all_basins.log"
     script:
