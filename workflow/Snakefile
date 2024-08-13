@@ -87,7 +87,7 @@ rule surges_basin_year:
 
 rule concatenate_all_years:
     input:
-        expand("tropcyc/{{basin}}/TCs_{{basin}}_{year}.hdf5", for year in years)
+        expand("tropcyc/{{basin}}/TCs_{{basin}}_{year}.hdf5", year=years)
     output:
         "tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5"
     wildcard_constraints:
