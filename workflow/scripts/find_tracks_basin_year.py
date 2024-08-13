@@ -33,26 +33,17 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 # Install exception handler
 sys.excepthook = handle_exception
 
-logger.info(f"Getting TC tracks for genesis basin {snakemake.wildcards.basin} for {snakemake.wildcards.start}-{snakemake.wildcards.end}")
+logger.info(f"Getting TC tracks for genesis basin {snakemake.wildcards.basin} for {snakemake.wildcards.year}")
 
-tracks = TCTracks.from_ibtracs_netcdf(year_range=(int(snakemake.wildcards.start), int(snakemake.wildcards.end)), genesis_basin=snakemake.wildcards.basin, estimate_missing=True)
+tracks = TCTracks.from_ibtracs_netcdf(year_range=(int(snakemake.wildcards.year), int(snakemake.wildcards.year)), genesis_basin=snakemake.wildcards.basin, estimate_missing=True)
 
 if not tracks.data:
     logger.info(f"No tracks found for this period. Returning empty file")
     Path(snakemake.output[0]).touch()
 
 else:
-    logger.info(f"Loading global centroids from {snakemake.input.global_cent}")
-    cent = Centroids.from_hdf5(snakemake.input.global_cent)
-
-    logger.info(f"Selecting centroids extent from tracks with buffer={snakemake.params.buf}")
-    cent_tracks = cent.select(extent=tracks.get_extent(snakemake.params.buf))
-
     logger.info(f"Interpolating tracks to {snakemake.params.timestep} hours steps")
     tracks.equal_timestep(snakemake.params.timestep)
 
-    logger.info(f"Computing TC wind-fields")
-    tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks)
-
     logger.info(f"Writing to {snakemake.output[0]}")
-    tc.write_hdf5(snakemake.output[0])
+    tracks.write_hdf5(snakemake.output[0])

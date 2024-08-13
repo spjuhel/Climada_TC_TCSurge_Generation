@@ -2,8 +2,9 @@
 # Please follow the best practices:
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there.
-start_years = list(range(1980, 2024, 5))
-periods = [(str(start), str(min(start + 4, 2023))) for start in start_years]
+
+years = list(range(1980, 2023, 1))
+
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 basins = ["NA", "SA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
@@ -19,33 +20,64 @@ rule create_centroids:
     script:
         "scripts/create_centroids.py"
 
-rule process_5_year_period:
-    input:
-        global_cent = "global_centroids.hdf5"
+rule tracks_basin_year:
     output:
-        "basins/{basin}_{start}_{end}.hdf5"
+        "tracks/{basin}/IBTracs_{basin}_{year}.hdf5"
+    params:
+        timestep=0.5
     wildcard_constraints:
         basin="[A-Z]+",
-        start="[0-9]{4}",
-        end="[0-9]{4}"
+        year="[0-9]{4}",
     conda:
         "climada_env"
-    params:
-        buf=5,
-        timestep=0.5
     resources:
         mem_mb_per_cpu=24000,
         runtime=240
     log:
-        "logs/create_{basin}_{start}_{end}.log"
+        "logs/find_tracks_{basin}_{year}.log"
     script:
-        "scripts/create_basin_5_year_period.py"
+        "scripts/find_tracks_basin_year.py"
 
-rule concatenate_all_periods:
+rule synth_tracks_basin_year:
     input:
-        expand("basins/{{basin}}_{start}_{end}.hdf5", zip, start=[p[0] for p in periods], end=[p[1] for p in periods])
+        "tracks/{basin}/IBTracs_{basin}_{year}.hdf5"
     output:
-        "basins/{basin}_full_1980_2023.hdf5"
+        "tracks/{basin}/IBTracs_synth{nsynth}_{basin}_{year}.hdf5"
+    wildcard_constraints:
+        nsynth="\d+",
+        basin="[A-Z]+",
+        year="[0-9]{4}",
+    conda:
+        "climada_env"
+    resources:
+        mem_mb_per_cpu=24000,
+        runtime=240
+    log:
+        "logs/generate_synths_tracks_{basin}_{year}.log"
+    script:
+        "scripts/generate_synths_tracks_basin_year.py"
+
+rule tcs_basin_year:
+    input:
+        "tracks/{basin}/IBTracs_synth{nsynth}_{basin}_{year}.hdf5",
+        "global_centroids.hdf5"
+    output:
+        "tropcyc/{basin}/TCs_{basin}_{year}.hdf5"
+    params:
+        buf=5
+
+rule surges_basin_year:
+    input:
+        "tropcyc/{basin}/TCs_{basin}_{year}.hdf5"
+    output:
+        "surge/{basin}/TCSurges_{basin}_{year}.hdf5"
+
+
+rule concatenate_all_years:
+    input:
+        expand("tropcyc/{{basin}}/TCs_{{basin}}_{year}.hdf5", for year in years)
+    output:
+        "tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5"
     wildcard_constraints:
         basin="[A-Z]+"
     resources:
