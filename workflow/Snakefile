@@ -24,7 +24,7 @@ rule tracks_basin_year:
     output:
         "tracks/{basin}/IBTracs_{basin}_{year}.hdf5"
     params:
-        timestep=0.5
+        timestep=1
     wildcard_constraints:
         basin="[A-Z]+",
         year="[0-9]{4}",
