@@ -2,8 +2,8 @@
 # Please follow the best practices:
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there.
-start_years = list(range(1980, 2024, 5))
-periods = [(str(start), str(min(start + 4, 2023))) for start in start_years]
+start_years = list(range(1980, 2024, 2))
+periods = [(str(start), str(min(start + 1, 2023))) for start in start_years]
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 basins = ["NA", "SA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
@@ -15,7 +15,7 @@ rule create_centroids:
     resources:
         mem_mb_per_cpu=12000
     conda:
-        "climada_env"
+        "climada_env_TC"
     script:
         "scripts/create_centroids.py"
 
@@ -29,7 +29,7 @@ rule process_5_year_period:
         start="[0-9]{4}",
         end="[0-9]{4}"
     conda:
-        "climada_env"
+        "climada_env_TC"
     params:
         buf=5,
         timestep=0.5
@@ -51,7 +51,7 @@ rule concatenate_all_periods:
     resources:
         mem_mb_per_cpu=12000,
     conda:
-        "climada_env"
+        "climada_env_TC"
     log:
         "logs/concatenate_{basin}.log"
     script:
@@ -63,7 +63,7 @@ rule concatenate_all_basins:
     output:
         "basins/all_basins_1980_2023.hdf5"
     conda:
-        "climada_env"
+        "climada_env_TC"
     resources:
         mem_mb_per_cpu=24000,
     log:
