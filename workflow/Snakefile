@@ -31,7 +31,7 @@ rule tracks_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
+        mem_mb_per_cpu=8000,
         runtime=240
     log:
         "logs/find_tracks_{basin}_{year}.log"
@@ -52,7 +52,7 @@ rule synth_tracks_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
+        mem_mb_per_cpu=8000,
         runtime=240
     log:
         "logs/generate_synths_tracks_{basin}_{year}.log"
@@ -70,7 +70,7 @@ rule tcs_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
+        mem_mb_per_cpu=8000,
         runtime=240
     log:
         "logs/generate_TCs_{basin}_{year}.log"
@@ -88,7 +88,7 @@ rule surges_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
+        mem_mb_per_cpu=8000,
         runtime=240
     log:
         "logs/generate_TCs_{basin}_{year}.log"
@@ -104,7 +104,7 @@ rule concatenate_all_years:
     wildcard_constraints:
         basin="[A-Z]+"
     resources:
-        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
+        mem_mb_per_cpu=8000,
     conda:
         "climada_env_TC"
     log:
@@ -120,7 +120,7 @@ rule concatenate_all_basins:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=lambda attempt: 2000 * attempt,
+        mem_mb_per_cpu=8000,
     log:
         "logs/concatenate_all_basins.log"
     script:
