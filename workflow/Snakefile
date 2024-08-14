@@ -8,6 +8,7 @@ years = list(range(1980, 2023, 1))
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 basins = ["NA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
+config["nsynth"] = 25
 
 rule create_centroids:
     output:
@@ -51,11 +52,10 @@ rule synth_tracks_basin_year:
     output:
         "tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5",
     wildcard_constraints:
-        nsynth=r"\d+",
         basin="[A-Z]+",
         year="[0-9]{4}",
     params:
-        nsynth=25,
+        nsynth=config["nsynth"],
     conda:
         "climada_env_TC"
     resources:
@@ -79,7 +79,7 @@ rule tcs_basin_year:
     conda:
         "climada_env_TC"
     threads:
-        8
+        4
     resources:
         mem_mb_per_cpu=10000,
         runtime=240,

@@ -3,6 +3,8 @@ import sys
 import logging, traceback
 from pathlib import Path
 
+import numpy as np
+
 from climada.hazard import TCTracks, TropCyclone, Centroids
 from pathos.pools import ProcessPool as Pool
 
@@ -55,6 +57,10 @@ else:
 
     logger.info(f"Computing TC wind-fields")
     tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks, pool=pool, max_memory_gb=snakemake.params.max_memory_gb)
+    freq_corr = 1/snakemake.config["nsynth"]
+    tc.frequency = np.ones(tc.event_id.size)*freq_corr
+    pool.close()
+    pool.join()
 
     logger.info(f"Writing to {snakemake.output[0]}")
     tc.write_hdf5(snakemake.output[0])
