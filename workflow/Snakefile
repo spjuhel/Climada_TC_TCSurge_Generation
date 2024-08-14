@@ -75,13 +75,11 @@ rule tcs_basin_year:
         "tropcyc/{basin}/TCs_{basin}_{year}.hdf5",
     params:
         buf=5,
-        max_memory_gb=8
+        max_memory_gb=30
     conda:
         "climada_env_TC"
-    threads:
-        4
     resources:
-        mem_mb_per_cpu=24000,
+        mem_mb_per_cpu=32000,
         runtime=240,
     log:
         "logs/generate_TCs_{basin}_{year}.log",
