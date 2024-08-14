@@ -4,6 +4,7 @@ import logging, traceback
 from pathlib import Path
 
 from climada.hazard import TCTracks, TropCyclone, Centroids
+from pathos.pools import ProcessPool as Pool
 
 logging.basicConfig(
     filename=snakemake.log[0],
@@ -43,7 +44,7 @@ if os.stat(snakemake.input[0]).st_size == 0:
     logger.info(f"File is empty, which probably means there is no track data for this basin-year. Ignoring")
     Path(snakemake.output[0]).touch()
 else:
-
+    pool = Pool()
     tracks = TCTracks.from_hdf5(snakemake.input.tracks)
 
     logger.info(f"Loading global centroids from {snakemake.input.centroids}")
@@ -53,7 +54,7 @@ else:
     cent_tracks = cent.select(extent=tracks.get_extent(snakemake.params.buf))
 
     logger.info(f"Computing TC wind-fields")
-    tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks)
+    tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks, pool=pool, max_memory_gb=snakemake.params.max_memory_gb)
 
     logger.info(f"Writing to {snakemake.output[0]}")
     tc.write_hdf5(snakemake.output[0])

@@ -13,6 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 
+
 def handle_exception(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
@@ -26,7 +27,6 @@ def handle_exception(exc_type, exc_value, exc_traceback):
             ]
         )
     )
-
 
 
 # Install exception handler

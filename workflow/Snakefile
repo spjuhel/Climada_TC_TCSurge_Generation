@@ -8,23 +8,25 @@ years = list(range(1980, 2023, 1))
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 basins = ["NA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
+
 rule create_centroids:
     output:
-        "global_centroids.hdf5"
+        "global_centroids.hdf5",
     log:
-        "logs/create_centroids.log"
+        "logs/create_centroids.log",
     resources:
-        mem_mb_per_cpu=12000
+        mem_mb_per_cpu=12000,
     conda:
         "climada_env_TC"
     script:
         "scripts/create_centroids.py"
 
+
 rule tracks_basin_year:
     output:
-        "tracks/{basin}/IBTracs_{basin}_{year}.hdf5"
+        "tracks/{basin}/IBTracs_{basin}_{year}.hdf5",
     params:
-        timestep=1
+        timestep=1,
     wildcard_constraints:
         basin="[A-Z]+",
         year="[0-9]{4}",
@@ -32,22 +34,24 @@ rule tracks_basin_year:
         "climada_env_TC"
     resources:
         mem_mb_per_cpu=8000,
-        runtime=240
+        runtime=240,
     log:
-        "logs/find_tracks_{basin}_{year}.log"
+        "logs/find_tracks_{basin}_{year}.log",
     script:
         "scripts/find_tracks_basin_year.py"
+
 
 def synth_track_memb(wildcards, attempt):
     return 8000 * attempt
 
+
 rule synth_tracks_basin_year:
     input:
-        "tracks/{basin}/IBTracs_{basin}_{year}.hdf5"
+        "tracks/{basin}/IBTracs_{basin}_{year}.hdf5",
     output:
-        "tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5"
+        "tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5",
     wildcard_constraints:
-        nsynth="\d+",
+        nsynth=r"\d+",
         basin="[A-Z]+",
         year="[0-9]{4}",
     params:
@@ -56,75 +60,80 @@ rule synth_tracks_basin_year:
         "climada_env_TC"
     resources:
         mem_mb_per_cpu=synth_track_memb,
-        runtime=240
+        runtime=240,
     log:
-        "logs/generate_synths_tracks_{basin}_{year}.log"
+        "logs/generate_synths_tracks_{basin}_{year}.log",
     script:
         "scripts/generate_synths_tracks_basin_year.py"
 
+
 rule tcs_basin_year:
     input:
-        tracks = "tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5",
-        centroids = "global_centroids.hdf5"
+        tracks="tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5",
+        centroids="global_centroids.hdf5",
     output:
-        "tropcyc/{basin}/TCs_{basin}_{year}.hdf5"
+        "tropcyc/{basin}/TCs_{basin}_{year}.hdf5",
     params:
-        buf=5
+        buf=5,
+        max_memory_gb=8
     conda:
         "climada_env_TC"
+    threads:
+        8
     resources:
-        mem_mb_per_cpu=24000,
-        runtime=240
+        mem_mb_per_cpu=10000,
+        runtime=240,
     log:
-        "logs/generate_TCs_{basin}_{year}.log"
+        "logs/generate_TCs_{basin}_{year}.log",
     script:
         "scripts/generate_TCs_basin_year.py"
 
 
 rule surges_basin_year:
     input:
-        "tropcyc/{basin}/TCs_{basin}_{year}.hdf5"
+        "tropcyc/{basin}/TCs_{basin}_{year}.hdf5",
     output:
-        "surge/{basin}/TCSurges_{basin}_{year}.hdf5"
+        "surge/{basin}/TCSurges_{basin}_{year}.hdf5",
     params:
-        buf=5
+        buf=5,
     conda:
         "climada_env_TC"
     resources:
         mem_mb_per_cpu=8000,
-        runtime=240
+        runtime=240,
     log:
-        "logs/generate_TCs_{basin}_{year}.log"
+        "logs/generate_TCs_{basin}_{year}.log",
     script:
         "scripts/generate_TCs_surges_basin_year.py"
 
 
 rule concatenate_all_years:
     input:
-        expand("tropcyc/{{basin}}/TCs_{{basin}}_{year}.hdf5", year=years)
+        expand("tropcyc/{{basin}}/TCs_{{basin}}_{year}.hdf5", year=years),
     output:
-        "tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5"
+        "tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5",
     wildcard_constraints:
-        basin="[A-Z]+"
+        basin="[A-Z]+",
     resources:
         mem_mb_per_cpu=24000,
     conda:
         "climada_env_TC"
     log:
-        "logs/concatenate_{basin}.log"
+        "logs/concatenate_{basin}.log",
     script:
         "scripts/concatenate_all_periods.py"
 
+
 rule concatenate_all_basins:
     input:
-        expand("tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5", basin=basins)
+        expand("tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5", basin=basins),
     output:
-        "tropcyc/all_basins_1980_2023.hdf5"
+        "tropcyc/all_basins_1980_2023.hdf5",
     conda:
         "climada_env_TC"
     resources:
         mem_mb_per_cpu=24000,
     log:
-        "logs/concatenate_all_basins.log"
+        "logs/concatenate_all_basins.log",
     script:
         "scripts/concatenate_all_basins.py"
