@@ -40,11 +40,11 @@ logger.info(f"Computing TC events for genesis basin {snakemake.wildcards.basin} 
 
 logger.info(f"Loading TC tracks from {snakemake.input.tracks}")
 
-if os.stat(snakemake.input[0]).st_size == 0:
+if os.stat(snakemake.input[0]).st_size == 0
     logger.info(f"File is empty, which probably means there is no track data for this basin-year. Ignoring")
     Path(snakemake.output[0]).touch()
 else:
-    pool = Pool()
+    pool = Pool(nodes=snakemake.threads)
     logger.info(f"Created multiprocess pool with {pool.ncpus} cpus.")
     tracks = TCTracks.from_hdf5(snakemake.input.tracks)
     logger.info(f"There are {len(tracks.data)} tracks.")
