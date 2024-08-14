@@ -75,7 +75,8 @@ rule tcs_basin_year:
         "tropcyc/{basin}/TCs_{basin}_{year}.hdf5",
     params:
         buf=5,
-        max_memory_gb=30
+        max_memory_gb=30,
+        batch_size = 100
     conda:
         "climada_env_TC"
     resources:
