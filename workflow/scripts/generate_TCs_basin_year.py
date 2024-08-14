@@ -1,3 +1,4 @@
+import os
 import sys
 import logging, traceback
 from pathlib import Path
@@ -35,13 +36,16 @@ sys.excepthook = handle_exception
 logger.info(f"Computing TC events for genesis basin {snakemake.wildcards.basin} for {snakemake.wildcards.year}")
 
 logger.info(f"Loading TC tracks from {snakemake.input.tracks}")
-tracks = TCTracks.from_hdf5(snakemake.input.tracks)
 
-if not tracks.data:
-    logger.info(f"No tracks found for this period. Returning empty file")
+logger.info(f"Loading TC tracks from {snakemake.input[0]}")
+
+if os.stat(snakemake.input[0]).st_size == 0:
+    logger.info(f"File is empty, which probably means there is no track data for this basin-year. Ignoring")
     Path(snakemake.output[0]).touch()
-
 else:
+
+    tracks = TCTracks.from_hdf5(snakemake.input.tracks)
+
     logger.info(f"Loading global centroids from {snakemake.input.global_cent}")
     cent = Centroids.from_hdf5(snakemake.input.global_cent)
 
