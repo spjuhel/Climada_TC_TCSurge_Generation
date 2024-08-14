@@ -81,7 +81,7 @@ rule tcs_basin_year:
     threads:
         4
     resources:
-        mem_mb_per_cpu=10000,
+        mem_mb_per_cpu=24000,
         runtime=240,
     log:
         "logs/generate_TCs_{basin}_{year}.log",
