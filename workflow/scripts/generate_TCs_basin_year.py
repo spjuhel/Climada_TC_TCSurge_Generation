@@ -46,7 +46,7 @@ else:
 
     tracks = TCTracks.from_hdf5(snakemake.input.tracks)
 
-    logger.info(f"Loading global centroids from {snakemake.input.global_cent}")
+    logger.info(f"Loading global centroids from {snakemake.input.centroids}")
     cent = Centroids.from_hdf5(snakemake.input.global_cent)
 
     logger.info(f"Selecting centroids extent from tracks with buffer={snakemake.params.buf}")
