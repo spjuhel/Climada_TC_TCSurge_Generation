@@ -4,6 +4,7 @@ import logging, traceback
 from pathlib import Path
 
 import numpy as np
+import copy
 
 from climada.hazard import TCTracks, TropCyclone, Centroids
 
