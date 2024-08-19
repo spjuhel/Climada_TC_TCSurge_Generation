@@ -2,7 +2,7 @@ import sys
 import logging, traceback
 from pathlib import Path
 
-from climada.hazard import TCTracks, Centroids, TropCyclone
+from climada.hazard import TCTracks
 
 logging.basicConfig(
     filename=snakemake.log[0],

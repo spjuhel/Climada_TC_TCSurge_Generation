@@ -113,7 +113,7 @@ rule surges_basin_year:
         mem_mb_per_cpu=16000,
         runtime=240,
     log:
-        "logs/generate_TCs_{basin}_{year}.log",
+        "logs/generate_TCs_{ssp}_{slr_year}slr_{basin}_{year}.log",
     script:
         "scripts/generate_TCs_surges_basin_year.py"
 
