@@ -10,8 +10,6 @@ config["start"] = 1980
 config["end"] = 2023
 config["nsynth"] = 25
 config["higher_res_surge"] = 0.008
-config["slr_data_path"] = "define_me_manually"
-config["dem_topo_path"] = "define_me_manually"
 
 years = list(range(config["start"], config["end"], 1))
 
