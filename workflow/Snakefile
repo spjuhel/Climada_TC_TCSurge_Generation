@@ -3,14 +3,14 @@
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there.
 
-years = list(range(1980, 2023, 1))
-
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 basins = ["NA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
 config["start"] = 1980
 config["end"] = 2023
 config["nsynth"] = 25
+
+years = list(range(config["start"], config["end"], 1))
 
 rule create_centroids:
     output:
