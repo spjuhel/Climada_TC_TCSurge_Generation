@@ -100,7 +100,7 @@ rule surges_basin_year:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=8000,
+        mem_mb_per_cpu=16000,
         runtime=240,
     log:
         "logs/generate_TCs_{basin}_{year}.log",
@@ -108,7 +108,7 @@ rule surges_basin_year:
         "scripts/generate_TCs_surges_basin_year.py"
 
 
-rule concatenate_all_years:
+rule concatenate_all_years_tcs:
     input:
         expand("tropcyc/{{basin}}/TCs_{{basin}}_{year}.hdf5", year=years),
     output:
@@ -120,12 +120,12 @@ rule concatenate_all_years:
     conda:
         "climada_env_TC"
     log:
-        "logs/concatenate_{basin}.log",
+        "logs/concatenate_all_years_tcs_{basin}.log",
     script:
-        "scripts/concatenate_all_periods.py"
+        "scripts/concatenate_all_years_tcs.py"
 
 
-rule concatenate_all_basins:
+rule concatenate_all_basins_tcs:
     input:
         expand("tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5", basin=basins),
     output:
@@ -135,6 +135,6 @@ rule concatenate_all_basins:
     resources:
         mem_mb_per_cpu=24000,
     log:
-        "logs/concatenate_all_basins.log",
+        "logs/concatenate_all_basins_tcs.log",
     script:
-        "scripts/concatenate_all_basins.py"
+        "scripts/concatenate_all_basins_tcs.py"
