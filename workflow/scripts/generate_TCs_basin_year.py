@@ -60,7 +60,7 @@ else:
         tr.data = tr.data[n:n+snakemake.params.batch_size]
         tr.equal_timestep(0.1)
         tc = TropCyclone.from_tracks(tr, centroids=cent_tracks, max_memory_gb=snakemake.params.max_memory_gb)
-        freq_corr = 1/snakemake.config["nsynth"]
+        freq_corr = 1 / snakemake.config["nsynth"]
         tc.frequency = np.ones(tc.event_id.size)*freq_corr
         tclist.append(tc)
 

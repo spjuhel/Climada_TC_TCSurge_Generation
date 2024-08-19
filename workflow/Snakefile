@@ -8,7 +8,9 @@ years = list(range(1980, 2023, 1))
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 basins = ["NA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
-config["nsynth"] = 2
+config["start"] = 1980
+config["end"] = 2023
+config["nsynth"] = 25
 
 rule create_centroids:
     output:
@@ -43,7 +45,7 @@ rule tracks_basin_year:
 
 
 def synth_track_memb(wildcards, attempt):
-    return 8000 * attempt
+    return 1000 * (config["nsynth"] // 2) * attempt
 
 
 rule synth_tracks_basin_year:
@@ -110,7 +112,7 @@ rule concatenate_all_years:
     input:
         expand("tropcyc/{{basin}}/TCs_{{basin}}_{year}.hdf5", year=years),
     output:
-        "tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5",
+        expand("tropcyc/{{basin}}/TCs_{{basin}}_{start}_{end}.hdf5", start=config["start"], end=config["end"])
     wildcard_constraints:
         basin="[A-Z]+",
     resources:
