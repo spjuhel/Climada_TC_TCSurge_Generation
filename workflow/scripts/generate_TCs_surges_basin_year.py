@@ -2,7 +2,12 @@ import sys
 import logging, traceback
 from pathlib import Path
 
-from climada.hazard import TCTracks, TropCyclone, Centroids
+import pandas as pd
+import geopandas as gpd
+import xarray as xr
+
+from climada.hazard import TropCyclone
+from climada_petals.hazard import TCSurgeBathtub
 
 logging.basicConfig(
     filename=snakemake.log[0],
@@ -29,27 +34,40 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     )
 
 
+basin = snakemake.wildcards.basin
+year = snakemake.wildcards.year
+tropcyc = snakemake.input.tropcyc
+slr = snakemake.input.slr
+slr_year = snakemake.wildcards.slr_year
+dem_topo_path = snakemake.input.dem
 
 # Install exception handler
 sys.excepthook = handle_exception
-logger.info(f"Computing TC events for genesis basin {snakemake.wildcards.basin} for {snakemake.wildcards.year}")
+logger.info(f"Computing TC Surge events for genesis basin {basin} for {year}")
 
-logger.info(f"Loading TC tracks from {snakemake.input.tracks}")
-tracks = TCTracks.from_hdf5(snakemake.input.tracks)
+logger.info(f"Reading TC events from {tropcyc}")
+tc = TropCyclone.from_hdf5(tropcyc)
 
-if not tracks.data:
-    logger.info(f"No tracks found for this period. Returning empty file")
-    Path(snakemake.output[0]).touch()
+logger.info(f"Reading SLR dataframe from {slr} for year {slr_year}")
+slr_data = xr.open_dataset(slr)
+df = slr_data.to_dataframe()
+slr_data.close()
 
-else:
-    logger.info(f"Loading global centroids from {snakemake.input.global_cent}")
-    cent = Centroids.from_hdf5(snakemake.input.global_cent)
+df = df.loc[pd.IndexSlice[:, :, slr_year]]
+df.reset_index(drop=True, inplace=True)
+df = df[~df["sea_level_change"].isna()]
+gdf = gpd.GeoDataFrame(
+    data=df, geometry=gpd.points_from_xy(df["lon"], df["lat"]), crs="EPSG:4326"
+)
+gdf = gdf.fillna(0)
 
-    logger.info(f"Selecting centroids extent from tracks with buffer={snakemake.params.buf}")
-    cent_tracks = cent.select(extent=tracks.get_extent(snakemake.params.buf))
+logger.info(f"Will use DEM data from {dem_topo_path}")
+## read by the method nothing to do here
 
-    logger.info(f"Computing TC wind-fields")
-    tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks)
 
-    logger.info(f"Writing to {snakemake.output[0]}")
-    tc.write_hdf5(snakemake.output[0])
+ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
+    tc, dem_topo_path, higher_res=snakemake.params.higher_res, sea_level_rise_gdf=gdf
+)
+
+logger.info(f"Writing to {snakemake.output[0]}")
+tc.write_hdf5(snakemake.output[0])

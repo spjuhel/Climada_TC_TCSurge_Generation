@@ -9,6 +9,9 @@ basins = ["NA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 config["start"] = 1980
 config["end"] = 2023
 config["nsynth"] = 25
+config["higher_res_surge"] = 0.008
+config["slr_data_path"] = "define_me_manually"
+config["dem_topo_path"] = "define_me_manually"
 
 years = list(range(config["start"], config["end"], 1))
 
@@ -92,11 +95,18 @@ rule tcs_basin_year:
 
 rule surges_basin_year:
     input:
-        "tropcyc/{basin}/TCs_{basin}_{year}.hdf5",
+        tropcyc="tropcyc/{basin}/TCs_{basin}_{year}.hdf5",
+        slr=expand("{slr_data}/{{ssp}}/total_{{ssp}}_medium_confidence_values.nc", slr_data=config["slr_data_path"]),
+        dem = config["dem_topo_path"]
     output:
-        "surge/{basin}/TCSurges_{basin}_{year}.hdf5",
+        "surge/{basin}/TCSurges_{ssp}_{slr_year}slr_{basin}_{year}.hdf5",
+    wildcard_constraints:
+        basin="[A-Z]+",
+        year="[0-9]{4}",
+        ssp="ssp119|ssp126|ssp245|ssp370|ssp585",
+        slr_year="20[2-9]0|21[0-5]0"
     params:
-        buf=5,
+        higher_res=config["higher_res_surge"]
     conda:
         "climada_env_TC"
     resources:
