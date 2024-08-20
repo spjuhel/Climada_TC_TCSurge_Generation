@@ -83,6 +83,9 @@ checkpoint tcs_split_basin_year_tracks:
     resources:
         mem_mb_per_cpu=8000,
         runtime=240,
+    wildcard_constraints:
+        basin="[A-Z]+",
+        year="[0-9]{4}",
     log:
         "logs/split_synth_tracks_{basin}_{year}.log",
     script:
@@ -103,6 +106,10 @@ rule tcs_basin_year_split:
     resources:
         mem_mb_per_cpu=16000,
         runtime=240,
+    wildcard_constraints:
+        basin="[A-Z]+",
+        year="[0-9]{4}",
+        i="\d+"
     log:
         "logs/generate_TCs_{basin}_{year}_split_{i}.log",
     script:
@@ -122,6 +129,7 @@ rule surges_basin_year_split:
     wildcard_constraints:
         basin="[A-Z]+",
         year="[0-9]{4}",
+        i="\d+",
         ssp="ssp119|ssp126|ssp245|ssp370|ssp585",
         slr_year="20[2-9]0|21[0-5]0",
     params:
@@ -184,6 +192,9 @@ rule gather_split_tcs:
     resources:
         mem_mb_per_cpu=16000,
         runtime=240,
+    wildcard_constraints:
+        basin="[A-Z]+",
+        year="[0-9]{4}",
     log:
         "logs/gather_split_TCs_{basin}_{year}.log",
     script:
@@ -197,6 +208,11 @@ rule gather_split_surges:
         "surge/{basin}/TCSurges_{ssp}_{slr_year}slr_{basin}_{year}.hdf5",
     conda:
         "climada_env_TC"
+    wildcard_constraints:
+        basin="[A-Z]+",
+        year="[0-9]{4}",
+        ssp="ssp119|ssp126|ssp245|ssp370|ssp585",
+        slr_year="20[2-9]0|21[0-5]0",
     resources:
         mem_mb_per_cpu=16000,
         runtime=240,
