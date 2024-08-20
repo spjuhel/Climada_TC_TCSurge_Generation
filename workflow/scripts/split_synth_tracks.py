@@ -44,10 +44,11 @@ if os.stat(snakemake.input[0]).st_size == 0:
     logger.info(
         f"File is empty, which probably means there is no track data for this basin-year. Ignoring."
     )
-    Path(snakemake.output[0]).touch()
+    Path(snakemake.output[0]).mkdir(parents=True, exist_ok=True)
 else:
     tracks = TCTracks.from_hdf5(snakemake.input.tracks)
     logger.info(f"There are {len(tracks.data)} tracks.")
+    Path(snakemake.output[0]).touch()
     split = 1
     for n in range(0, tracks.size, max_tracks):
         logger.info(f"Splitting {n}:{n+max_tracks} tracks")
