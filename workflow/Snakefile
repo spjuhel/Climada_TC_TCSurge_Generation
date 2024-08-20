@@ -163,14 +163,6 @@ def aggregate_surges(wildcards):
     checkpoint_output = checkpoints.tcs_split_basin_year_tracks.get(**wildcards).output[
         0
     ]
-    print(
-        glob_wildcards(
-            os.path.join(
-                os.getcwd(),
-                checkpoint_output, "IBTracs_synth_{basin}_{year}_split_{i}.hdf5"
-            )
-        ).i,
-    )
     return expand(
         "surge/{{basin}}/TCSurges_{{ssp}}_{{slr_year}}slr_{{basin}}_{{year}}_split_{i}.hdf5",
         i=glob_wildcards(

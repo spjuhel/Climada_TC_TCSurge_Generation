@@ -54,17 +54,9 @@ else:
     cent_tracks = cent.select(extent=tracks.get_extent(snakemake.params.buf))
 
     logger.info(f"Computing TC wind-fields")
-    tclist = []
-    for n in range(0, tracks.size, snakemake.params.batch_size):
-        logger.info(f"Computing for {n}:{n+snakemake.params.batch_size} tracks")
-        tr = copy.deepcopy(tracks)
-        tr.data = tr.data[n:n+snakemake.params.batch_size]
-        tr.equal_timestep(0.1)
-        tc = TropCyclone.from_tracks(tr, centroids=cent_tracks, max_memory_gb=snakemake.params.max_memory_gb)
-        freq_corr = 1 / snakemake.config["nsynth"]
-        tc.frequency = np.ones(tc.event_id.size)*freq_corr
-        tclist.append(tc)
-
-    tc = TropCyclone.concat(tclist)
+    tracks.equal_timestep(0.1)
+    tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks, max_memory_gb=snakemake.params.max_memory_gb)
+    freq_corr = 1 / snakemake.config["nsynth"]
+    tc.frequency = np.ones(tc.event_id.size)*freq_corr
     logger.info(f"Writing to {snakemake.output[0]}")
     tc.write_hdf5(snakemake.output[0])
