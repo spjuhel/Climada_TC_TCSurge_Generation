@@ -75,7 +75,7 @@ checkpoint tcs_split_basin_year_tracks:
     input:
         tracks="tracks/{basin}/IBTracs_synth_{basin}_{year}.hdf5",
     output:
-        directory("tropcyc/{basin}/{year}/synth_splits/"),
+        directory("tracks/{basin}/{year}/synth_splits/"),
     params:
         max_tracks=config["max_tracks_per_split"],
     conda:
@@ -109,7 +109,7 @@ rule tcs_basin_year_split:
         "scripts/generate_TCs_basin_year.py"
 
 
-rule surges_basin_year:
+rule surges_basin_year_split:
     input:
         tropcyc="tropcyc/{basin}/TCs_{basin}_{year}_split_{i}.hdf5",
         slr=expand(
