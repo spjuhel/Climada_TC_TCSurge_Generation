@@ -76,7 +76,7 @@ checkpoint tcs_split_basin_year_tracks:
     output:
         directory("tropcyc/{basin}/{year}/synth_splits/")
     params:
-        max_tracks=config["max_track"]
+        max_tracks=config["max_tracks_per_split"]
     conda:
         "climada_env_TC"
     resources:
