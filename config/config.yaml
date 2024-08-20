@@ -1,0 +1,3 @@
+slr_data_path: "/cluster/project/climate/sjuhel/climada/data/slr"
+dem_topo_path: "/cluster/project/climate/sjuhel/climada/data/elevation/SRTM15+V2.tiff"
+max_tracks_per_split: 100
