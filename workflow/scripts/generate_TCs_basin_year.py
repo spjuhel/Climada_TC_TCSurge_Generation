@@ -56,6 +56,7 @@ else:
     logger.info(f"Computing TC wind-fields")
     tclist = []
     for n in range(0, tracks.size, snakemake.params.batch_size):
+        logger.info(f"Computing for {n}:{n+snakemake.params.batch_size} tracks")
         tr = copy.deepcopy(tracks)
         tr.data = tr.data[n:n+snakemake.params.batch_size]
         tr.equal_timestep(0.1)
