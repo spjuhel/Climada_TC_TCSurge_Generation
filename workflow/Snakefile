@@ -249,7 +249,7 @@ rule concatenate_all_years_tcs:
 
 rule concatenate_all_basins_tcs:
     input:
-        expand("tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5", basin=basins),
+        expand("tropcyc/{basin}/TCs_{basin}_1980_2023.hdf5", basin=config["basins"]),
     output:
         "tropcyc/all_basins_1980_2023.hdf5",
     conda:
