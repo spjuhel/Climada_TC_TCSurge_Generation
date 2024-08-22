@@ -4,19 +4,31 @@
 # in particular regarding the standardized folder structure mentioned there.
 
 # Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
-basins = ["NA", "EP", "WP", "SP", "SI", "NI"]  # Replace with actual basin names
 
-config["start"] = 1980
-config["end"] = 2023
-config["nsynth"] = 25
-config["higher_res_surge"] = 0.008
+"""This pipeline generates tropical cyclone impacts and associate coastal surge impacts data
+using the Climada modeling plateform based on IBTrACS historical tropical cyclone tracks.
+
+End results are at the global scope for both type of impacts, for both historical period and
+choosen RCPs, and future years.
+
+It uses Climada's updated synthetic track generation to simulate a choosen number of tracks `nsynth`
+from historical ones with a random-walk process. Then, it computes maximum sustained wind-speed using the
+Holland 2008 model. Default resolution is 0.041666659999975764 degrees (i.e. 150 arcsec).
+
+Effects of climate change are simulated using so-called Knutson factors which scale the intensity and
+frequency of events to a given RCP and future year.
+
+Coastal surges impacts are estimated using a simple bathtub model and elevation data and via down-scaling
+the wind field at a 0.0
+"""
 
 years = list(range(config["start"], config["end"], 1))
-
 
 rule create_centroids:
     output:
         "global_centroids.hdf5",
+    params:
+        centroid_resolution=config["centroid_resolution"]
     log:
         "logs/create_centroids.log",
     resources:
