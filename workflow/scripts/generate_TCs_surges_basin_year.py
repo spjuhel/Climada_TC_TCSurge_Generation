@@ -41,6 +41,8 @@ slr = snakemake.input.slr
 slr_year = snakemake.wildcards.slr_year
 dem_topo_path = snakemake.input.dem
 
+print(slr)
+print(type(slr))
 # Install exception handler
 sys.excepthook = handle_exception
 logger.info(f"Computing TC Surge events for genesis basin {basin} for {year}")
