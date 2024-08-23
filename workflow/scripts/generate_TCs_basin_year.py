@@ -41,7 +41,7 @@ sys.excepthook = handle_exception
 basin = snakemake.wildcards.genesis_basin
 year = snakemake.wildcards.tracks_year
 split = snakemake.wildcards.split
-climate_scenarios = snakemake.config.climate_scenarios
+climate_scenarios = snakemake.config["climate_scenarios"]
 climate_sce_re = re.compile(r"historical|rcp(\d)(\d)_(2100|20\d\d)")
 logger.info(f"Computing TC events for genesis basin {basin} for {year}")
 
