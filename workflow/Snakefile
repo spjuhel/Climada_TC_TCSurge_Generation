@@ -185,7 +185,7 @@ rule apply_climate_change:
         tropcyc="tropcyc/{{genesis_basin}}/historical/TCs_{{genesis_basin}}_all_historical.hdf5",
     output:
         expand(
-            "tropcyc/{{genesis_basin}}/{climate_scenarios}/TCs_{{genesis_basin}}_all_{climate_scenario}.hdf5",
+            "tropcyc/{{genesis_basin}}/{climate_scenario}/TCs_{{genesis_basin}}_all_{climate_scenario}.hdf5",
             climate_scenario=config["climate_scenarios"],
         ),
     resources:
