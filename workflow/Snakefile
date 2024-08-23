@@ -118,7 +118,7 @@ rule tcs_basin_year_split:
         tracks="tracks/{genesis_basin}/{tracks_year}/synth_splits/IBTracs_synth_{genesis_basin}_{tracks_year}_split_{split}.hdf5",
         centroids="global_centroids.hdf5",
     output:
-        "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_{{tracks_year}}_historical_split_{{split}}.hdf5"
+        "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_{{tracks_year}}_historical_split_{{split}}.hdf5",
     params:
         buf=5,
         max_memory_gb=14,
@@ -132,10 +132,9 @@ rule tcs_basin_year_split:
     script:
         "scripts/generate_TCs_basin_year.py"
 
+
 def aggregate_tcs(wildcards):
-    checkpoint_output = checkpoints.split_basin_year_tracks.get(**wildcards).output[
-        0
-    ]
+    checkpoint_output = checkpoints.split_basin_year_tracks.get(**wildcards).output[0]
     return expand(
         "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_{{tracks_year}}_historical_split_{split}.hdf5",
         split=glob_wildcards(
@@ -170,7 +169,7 @@ rule concatenate_all_years_tcs:
             tracks_year=tracks_year_range,
         ),
     output:
-        "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_historical.hdf5"
+        "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_historical.hdf5",
     resources:
         mem_mb_per_cpu=24000,
     conda:
@@ -180,14 +179,15 @@ rule concatenate_all_years_tcs:
     script:
         "scripts/concatenate_all_years_tcs.py"
 
+
 rule apply_climate_change:
     input:
-        tropcyc = "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_historical.hdf5"
+        tropcyc="tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_historical.hdf5",
     output:
         expand(
             "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_{climate_scenario}.hdf5",
             climate_scenario=config["climate_scenarios"],
-        )
+        ),
     resources:
         mem_mb_per_cpu=24000,
     conda:
@@ -201,7 +201,7 @@ rule apply_climate_change:
 checkpoint split_basin_year_TCs:
     """Split TCs of a particular basin into files with at most `max_tracks_per_split` tracks"""
     input:
-        tropcyc = "tropcyc/{genesis_basin}/TCs_{genesis_basin}_{climate_scenario}.hdf5",
+        tropcyc="tropcyc/{genesis_basin}/TCs_{genesis_basin}_{climate_scenario}.hdf5",
     output:
         directory("tropcyc/{genesis_basin}/splits/"),
     params:
@@ -239,10 +239,9 @@ rule surges_basin_year_split:
     script:
         "scripts/generate_TCs_surges_basin_year.py"
 
+
 def aggregate_surges(wildcards):
-    checkpoint_output = checkpoints.split_basin_year_TCs.get(**wildcards).output[
-        0
-    ]
+    checkpoint_output = checkpoints.split_basin_year_TCs.get(**wildcards).output[0]
     return expand(
         "surge/{{genesis_basin}}/TCSurges_{{ssp}}_{{slr_year}}slr_{{genesis_basin}}_{{climate_scenario}}_split_{split}.hdf5",
         split=glob_wildcards(
@@ -278,7 +277,7 @@ rule concatenate_all_basins_tcs:
             genesis_basin=config["genesis_basins"],
         ),
     output:
-        "tropcyc/tropcyc_all_basins_{climate_scenario}.hdf5"
+        "tropcyc/tropcyc_all_basins_{climate_scenario}.hdf5",
     conda:
         "climada_env_TC"
     resources:
@@ -288,6 +287,7 @@ rule concatenate_all_basins_tcs:
     script:
         "scripts/concatenate_all_basins_tcs.py"
 
+
 rule concatenate_all_basins_surges:
     input:
         expand(
@@ -295,7 +295,7 @@ rule concatenate_all_basins_surges:
             genesis_basin=config["genesis_basins"],
         ),
     output:
-        "surge/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5"
+        "surge/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
     conda:
         "climada_env_TC"
     resources:
@@ -309,15 +309,16 @@ rule concatenate_all_basins_surges:
 rule all_tcs:
     input:
         expand(
-            "tropcyc/tropcyc_all_basins_{climate_scenario}.hdf5"
+            "tropcyc/tropcyc_all_basins_{climate_scenario}.hdf5",
             climate_scenario=config["climate_scenarios"],
         ),
+
 
 rule all_surges:
     input:
         expand(
-            "surge/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5"
+            "surge/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
             climate_scenario=config["climate_scenarios"],
-            ssp = config["slr_ssp"],
-            slr_year = config["slr_years"],
+            ssp=config["slr_ssp"],
+            slr_year=config["slr_years"],
         ),
