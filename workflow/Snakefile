@@ -24,7 +24,7 @@ the wind field at a 0.008 degrees (~29 arcsec).
 Copyright (C) 2024  Samuel Juhel
 """
 
-years = list(range(config["start"], config["end"], 1))
+tracks_year_range = list(range(config["start"], config["end"], 1))
 
 
 wildcard_constraints:
@@ -226,7 +226,7 @@ rule concatenate_all_years_tcs:
     input:
         expand(
             "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_{tracks_year}_{{climate_scenario}}.hdf5",
-            tracks_year=tracks_years,
+            tracks_year=tracks_year_range,
         ),
     output:
         expand(
