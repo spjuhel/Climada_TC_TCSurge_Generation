@@ -35,10 +35,10 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 
 basin = snakemake.wildcards.basin
-year = int(snakemake.wildcards.year)
+year = snakemake.wildcards.year
 tropcyc = snakemake.input.tropcyc
 slr = snakemake.input.slr[0]
-slr_year = snakemake.wildcards.slr_year
+slr_year = int(snakemake.wildcards.slr_year)
 dem_topo_path = snakemake.input.dem
 
 # Install exception handler
