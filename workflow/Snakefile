@@ -118,7 +118,7 @@ rule tcs_basin_year_split:
         tracks="tracks/{genesis_basin}/{tracks_year}/synth_splits/IBTracs_synth_{genesis_basin}_{tracks_year}_split_{split}.hdf5",
         centroids="global_centroids.hdf5",
     output:
-        "tropcyc/{{genesis_basin}}/historical/TCs_{{genesis_basin}}_{{tracks_year}}_historical_split_{{split}}.hdf5",
+        "tropcyc/{genesis_basin}/historical/TCs_{genesis_basin}_{tracks_year}_historical_split_{split}.hdf5",
     params:
         buf=5,
         max_memory_gb=14,
