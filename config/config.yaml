@@ -3,6 +3,7 @@ start: 1980
 end: 2023
 nsynth: 25
 higher_res_surge: 0.008
+climate_scenarios: ["historical", "rcp26_2060", "rcp85_2060"]
 centroid_resolution: 0.041666659999975764
 
 slr_data_path: "/cluster/project/climate/sjuhel/climada/data/slr"
