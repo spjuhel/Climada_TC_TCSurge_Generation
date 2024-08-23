@@ -1,4 +1,4 @@
-basins : ["NA", "EP", "WP", "SP", "SI", "NI"]
+genesis_basins : ["NA", "EP", "WP", "SP", "SI", "NI"]
 start: 1980
 end: 2023
 nsynth: 25
