@@ -2,7 +2,6 @@ import os
 import sys
 import logging, traceback
 from pathlib import Path
-import re
 
 import numpy as np
 
@@ -41,8 +40,6 @@ sys.excepthook = handle_exception
 basin = snakemake.wildcards.genesis_basin
 year = snakemake.wildcards.tracks_year
 split = snakemake.wildcards.split
-climate_scenarios = snakemake.config["climate_scenarios"]
-climate_sce_re = re.compile(r"historical|rcp(\d)(\d)_(2100|20\d\d)")
 logger.info(f"Computing TC events for genesis basin {basin} for {year}")
 
 logger.info(f"Loading TC tracks from {snakemake.input.tracks}")
@@ -68,15 +65,3 @@ else:
     out = f"tropcyc/{basin}/TCs_{basin}_{year}_historical_split_{split}.hdf5"
     logger.info(f"Writing to {out}")
     tc.write_hdf5(out)
-    for climate_scenario in climate_scenarios:
-        scenario = climate_sce_re.match(climate_scenario)
-        if not scenario:
-            raise ValueError(f"Not a valid climate scenario: {climate_scenario}")
-        if climate_scenario != "historical":
-            rcp_arg = f"{scenario.group(1)}.{scenario.group(2)}"
-            cc_ref_year = int(scenario.group(3))
-            logger.info(f"Applying climate change (rcp{rcp_arg} - {cc_ref_year})")
-            tc_clim = tc.apply_climate_scenario_knu(ref_year=int(cc_ref_year), rcp_scenario=rcp_arg)
-            out = f"tropcyc/{basin}/TCs_{basin}_{year}_{climate_scenario}_split_{split}.hdf5"
-            logger.info(f"Writing to {out}")
-            tc_clim.write_hdf5(out)

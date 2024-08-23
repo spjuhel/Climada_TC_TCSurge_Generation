@@ -34,8 +34,10 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     )
 
 
-basin = snakemake.wildcards.basin
-year = snakemake.wildcards.year
+basin = snakemake.wildcards.genesis_basin
+climate_scenario = snakemake.wildcards.climate_scenario
+split = snakemake.wildcards.split
+ssp = snakemake.wildcards.ssp
 tropcyc = snakemake.input.tropcyc
 slr = snakemake.input.slr[0]
 slr_year = int(snakemake.wildcards.slr_year)
@@ -43,7 +45,7 @@ dem_topo_path = snakemake.input.dem
 
 # Install exception handler
 sys.excepthook = handle_exception
-logger.info(f"Computing TC Surge events for genesis basin {basin} for {year}")
+logger.info(f"Computing TC Surge events for genesis basin {basin}")
 
 logger.info(f"Reading TC events from {tropcyc}")
 tc = TropCyclone.from_hdf5(tropcyc)
