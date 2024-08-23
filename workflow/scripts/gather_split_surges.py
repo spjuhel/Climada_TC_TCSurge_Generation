@@ -1,7 +1,7 @@
 import sys
 import logging, traceback
 
-from climada_petals.hazard import TCSurgeBathtub
+from climada.hazard import Hazard
 
 logging.basicConfig(
     filename=snakemake.log[0],
@@ -33,6 +33,6 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_exception
 
 logger.info(f"Regrouping")
-tcs = TCSurgeBathtub.concat([TCSurgeBathtub.from_hdf5(tcfile) for tcfile in snakemake.input])
+tcs = Hazard.concat([Hazard.from_hdf5(tcfile) for tcfile in snakemake.input])
 logger.info(f"Writing to {snakemake.output[0]}")
 tcs.write_hdf5(snakemake.output[0])
