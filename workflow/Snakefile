@@ -165,12 +165,12 @@ def aggregate_tcs(wildcards):
     ]
     return expand(
         "tropcyc/{{genesis_basin}}/TCs_{{genesis_basin}}_{{tracks_year}}_{{climate_scenario}}_split_{split}.hdf5",
-        i=glob_wildcards(
+        split=glob_wildcards(
             os.path.join(
                 checkpoint_output,
                 "IBTracs_synth_{genesis_basin}_{tracks_year}_{climate_scenario}_split_{split}.hdf5",
             )
-        ).i,
+        ).split,
     )
 
 
@@ -180,13 +180,13 @@ def aggregate_surges(wildcards):
     ]
     return expand(
         "surge/{{genesis_basin}}/TCSurges_{{ssp}}_{{slr_year}}slr_{{genesis_basin}}_{{tracks_year}}_{{climate_scenario}}_split_{split}.hdf5",
-        i=glob_wildcards(
+        split=glob_wildcards(
             os.path.join(
                 os.getcwd(),
                 checkpoint_output,
                 "IBTracs_synth_{genesis_basin}_{tracks_year}_{climate_scenario}_split_{split}.hdf5",
             )
-        ).i,
+        ).split,
     )
 
 
