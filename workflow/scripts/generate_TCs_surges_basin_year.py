@@ -70,4 +70,4 @@ ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
 )
 
 logger.info(f"Writing to {snakemake.output[0]}")
-tc.write_hdf5(snakemake.output[0])
+ts_rescaled_slr.write_hdf5(snakemake.output[0])
