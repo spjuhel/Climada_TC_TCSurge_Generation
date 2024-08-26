@@ -58,6 +58,6 @@ for climate_scenario in climate_scenarios:
         cc_ref_year = int(scenario.group(3))
         logger.info(f"Applying climate change (rcp{rcp_arg} - {cc_ref_year})")
         tc_clim = tc.apply_climate_scenario_knu(target_year=int(cc_ref_year), scenario=rcp_arg)
-        out = f"tropcyc/{basin}/TCs_{basin}_{climate_scenario}.hdf5"
+        out = f"tropcyc/{basin}/{climate_scenario}/TCs_{basin}_all_{climate_scenario}.hdf5"
         logger.info(f"Writing to {out}")
         tc_clim.write_hdf5(out)

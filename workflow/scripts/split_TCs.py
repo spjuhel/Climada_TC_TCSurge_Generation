@@ -40,7 +40,6 @@ tropcyc = snakemake.input.tropcyc
 outdir = Path(snakemake.output[0])
 max_tcs = snakemake.params.max_tracks
 basin = snakemake.wildcards.genesis_basin
-year = snakemake.wildcards.tracks_year
 climate_scenario = snakemake.wildcards.climate_scenario
 
 logger.info(f"Loading TCs from {tropcyc}")
@@ -52,13 +51,13 @@ if os.stat(snakemake.input[0]).st_size == 0:
     Path(snakemake.output[0]).mkdir(parents=True, exist_ok=True)
 else:
     tcs = TropCyclone.from_hdf5(tropcyc)
-    logger.info(f"There are {tropcyc.size} TCs.")
+    logger.info(f"There are {tcs.size} TCs.")
     Path(snakemake.output[0]).mkdir(parents=True, exist_ok=True)
 
     split = 1
     for n in range(0, tcs.size, max_tcs):
         logger.info(f"Splitting {n}:{n+max_tcs} TCs")
-        tc = tcs.select(event_id=[n+1 : n + max_tcs+1])
+        tc = tcs.select(event_id=list(range(n+1,n+max_tcs+1,1)))
         filename = (
             outdir
             / f"TCs_{basin}_{climate_scenario}_split_{split}.hdf5"
