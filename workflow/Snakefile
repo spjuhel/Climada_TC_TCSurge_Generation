@@ -24,7 +24,7 @@ the wind field at a 0.008 degrees (~29 arcsec).
 Copyright (C) 2024  Samuel Juhel
 """
 
-tracks_year_range = list(range(config["start"], config["end"], 1))
+tracks_year_range = list(range(config["start"], config["end"]+1, 1))
 
 
 wildcard_constraints:
