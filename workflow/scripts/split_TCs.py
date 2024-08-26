@@ -37,10 +37,13 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_exception
 
 tropcyc = snakemake.input.tropcyc
-logger.info(f"Loading TCs from {tropcyc}")
-
 outdir = Path(snakemake.output[0])
 max_tcs = snakemake.params.max_tracks
+basin = snakemake.wildcards.genesis_basin
+year = snakemake.wildcards.tracks_year
+climate_scenario = snakemake.wildcards.climate_scenario
+
+logger.info(f"Loading TCs from {tropcyc}")
 
 if os.stat(snakemake.input[0]).st_size == 0:
     logger.info(
@@ -58,7 +61,7 @@ else:
         tc = tcs.select(event_id=[n+1 : n + max_tcs+1])
         filename = (
             outdir
-            / f"TCs_{snakemake.wildcards.basin}_{snakemake.wildcards.climate_scenario}_split_{split}.hdf5"
+            / f"TCs_{basin}_{climate_scenario}_split_{split}.hdf5"
         )
         logger.info(f"Writing to {filename}")
         tc.write_hdf5(filename)

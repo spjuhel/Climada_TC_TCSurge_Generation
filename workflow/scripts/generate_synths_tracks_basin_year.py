@@ -33,7 +33,12 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 # Install exception handler
 sys.excepthook = handle_exception
-logger.info(f"Generating Synth TC tracks for genesis basin {snakemake.wildcards.basin} for {snakemake.wildcards.year}")
+
+basin = snakemake.wildcards.genesis_basin
+year = snakemake.wildcards.tracks_year
+nsynth = snakemake.params.nsynth
+
+logger.info(f"Generating Synth TC tracks for genesis basin {basin} for {year}")
 
 logger.info(f"Loading TC tracks from {snakemake.input[0]}")
 if os.stat(snakemake.input[0]).st_size == 0:
@@ -42,7 +47,7 @@ if os.stat(snakemake.input[0]).st_size == 0:
 
 else:
     tracks = TCTracks.from_hdf5(snakemake.input[0])
-    tracks.calc_perturbed_trajectories(nb_synth_tracks=snakemake.params.nsynth)
+    tracks.calc_perturbed_trajectories(nb_synth_tracks=nsynth)
 
     logger.info(f"Writing to {snakemake.output[0]}")
     tracks.write_hdf5(snakemake.output[0])

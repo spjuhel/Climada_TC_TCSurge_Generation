@@ -35,10 +35,12 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 # Install exception handler
 sys.excepthook = handle_exception
-logger.info(f"Loading TC tracks from {snakemake.input.tracks}")
-
 outdir = Path(snakemake.output[0])
 max_tracks = snakemake.params.max_tracks
+basin = snakemake.wildcards.genesis_basin
+year = snakemake.wildcards.tracks_year
+
+logger.info(f"Loading TC tracks from {snakemake.input.tracks}")
 
 if os.stat(snakemake.input[0]).st_size == 0:
     logger.info(
@@ -57,7 +59,7 @@ else:
         tr.data = tr.data[n : n + max_tracks]
         filename = (
             outdir
-            / f"IBTracs_synth_{snakemake.wildcards.basin}_{snakemake.wildcards.year}_split_{split}.hdf5"
+            / f"IBTracs_synth_{basin}_{year}_split_{split}.hdf5"
         )
         logger.info(f"Writing to {filename}")
         tr.write_hdf5(filename)
