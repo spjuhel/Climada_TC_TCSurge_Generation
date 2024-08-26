@@ -111,6 +111,8 @@ checkpoint split_basin_year_tracks:
     script:
         "scripts/split_synth_tracks.py"
 
+def get_mb_for_split(wildcards, attempt):
+    return attempt * 16000
 
 rule tcs_basin_year_split:
     """Generate tropical cyclones from synthetic tracks (for a split file)"""
@@ -125,7 +127,7 @@ rule tcs_basin_year_split:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=16000,
+        mem_mb_per_cpu=get_mb_for_split,
         runtime=240,
     log:
         "logs/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.log",
@@ -322,3 +324,31 @@ rule all_surges:
             ssp=config["slr_ssp"],
             slr_year=config["slr_years"],
         ),
+
+rule tcs_per_countries:
+    input:
+        "tropcyc/tropcyc_all_basins_{climate_scenario}.hdf5"
+    output:
+        "tropcyc/tropcyc_{country}_{climate_scenario}.hdf5"
+    conda:
+        "climada_env_TC"
+    resources:
+        mem_mb_per_cpu=24000,
+    log:
+        "logs/get_{country}_tcs_{climate_scenario}.log",
+    script:
+        "scripts/get_country_tc.py"
+
+rule surge_per_countries:
+    input:
+        "surge/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
+    output:
+        "surge/surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
+    conda:
+        "climada_env_TC"
+    resources:
+        mem_mb_per_cpu=24000,
+    log:
+        "logs/get_{country}_surge_{ssp}_{slr_year}slr_{climate_scenario}.log",
+    script:
+        "scripts/get_country_surge.py"
