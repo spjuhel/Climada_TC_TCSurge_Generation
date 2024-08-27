@@ -1,7 +1,6 @@
 import sys
 import logging, traceback
 import os
-import copy
 
 from pathlib import Path
 
@@ -38,12 +37,10 @@ sys.excepthook = handle_exception
 
 tropcyc = snakemake.input.tropcyc
 outdir = Path(snakemake.output[0])
-max_tcs = snakemake.params.max_tracks
-basin = snakemake.wildcards.genesis_basin
+max_tcs = snakemake.params.max_tcs
 climate_scenario = snakemake.wildcards.climate_scenario
 
 logger.info(f"Loading TCs from {tropcyc}")
-
 if os.stat(snakemake.input[0]).st_size == 0:
     logger.info(
         f"File is empty, which probably means there is no track data for this basin-year. Ignoring."
@@ -60,7 +57,7 @@ else:
         tc = tcs.select(event_id=list(range(n+1,n+max_tcs+1,1)))
         filename = (
             outdir
-            / f"TCs_{basin}_{climate_scenario}_split_{split}.hdf5"
+            / f"TCs_{climate_scenario}_split_{split}.hdf5"
         )
         logger.info(f"Writing to {filename}")
         tc.write_hdf5(filename)

@@ -57,8 +57,9 @@ else:
     logger.info(f"Selecting centroids extent from tracks with buffer={snakemake.params.buf}")
     cent_tracks = cent.select(extent=tracks.get_extent(snakemake.params.buf))
 
-    logger.info(f"Computing TC wind-fields")
+    logger.info(f"Increasing temporal resolution of tracks")
     tracks.equal_timestep(0.1)
+    logger.info(f"Computing TC wind-fields")
     tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks, max_memory_gb=snakemake.params.max_memory_gb)
     freq_corr = 1 / snakemake.config["nsynth"]
     tc.frequency = np.ones(tc.event_id.size)*freq_corr

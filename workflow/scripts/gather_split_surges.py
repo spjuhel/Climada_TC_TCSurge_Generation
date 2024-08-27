@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import logging, traceback
 
 from climada.hazard import Hazard
@@ -31,8 +31,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 # Install exception handler
 sys.excepthook = handle_exception
-
 logger.info(f"Regrouping")
-tcs = Hazard.concat([Hazard.from_hdf5(tcfile) for tcfile in snakemake.input])
+tcs = Hazard.concat([Hazard.from_hdf5(tcfile) for tcfile in snakemake.input if os.stat(tcfile).st_size!=0])
 logger.info(f"Writing to {snakemake.output[0]}")
 tcs.write_hdf5(snakemake.output[0])
