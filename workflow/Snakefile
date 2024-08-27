@@ -112,7 +112,7 @@ checkpoint split_basin_year_tracks:
         "scripts/split_synth_tracks.py"
 
 def get_mb_for_split(wildcards, attempt):
-    return attempt * 16000
+    return max((attempt-1) * 64000,10000)
 
 rule tcs_basin_year_split:
     """Generate tropical cyclones from synthetic tracks (for a split file)"""
@@ -131,6 +131,8 @@ rule tcs_basin_year_split:
         runtime=240,
     log:
         "logs/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.log",
+    benchmark:
+        "benchmark/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.tsv",
     script:
         "scripts/generate_TCs_basin_year.py"
 
@@ -188,7 +190,7 @@ rule apply_climate_change:
     output:
         expand(
             "tropcyc/{{genesis_basin}}/{climate_scenario}/TCs_{{genesis_basin}}_all_{climate_scenario}.hdf5",
-            climate_scenario=config["climate_scenarios"],
+            climate_scenario=[c for c in config["climate_scenarios"] if c!="historical"],
         ),
     resources:
         mem_mb_per_cpu=24000,
@@ -238,6 +240,8 @@ rule surges_basin_year_split:
         runtime=240,
     log:
         "logs/generate_TCs_{ssp}_{slr_year}slr_{genesis_basin}_{climate_scenario}_{split}.log",
+    benchmark:
+        "benchmark/generate_TCs_{ssp}_{slr_year}slr_{genesis_basin}_{climate_scenario}_{split}.tsv",
     script:
         "scripts/generate_TCs_surges_basin_year.py"
 
