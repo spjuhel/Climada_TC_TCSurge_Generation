@@ -30,11 +30,10 @@ tracks_year_range = list(range(config["start"], config["end"]+1, 1))
 wildcard_constraints:
     genesis_basin=r"[A-Z]+",
     tracks_year=r"[0-9]{4}",
-    ssp=r"ssp119|ssp126|ssp245|ssp370|ssp585",
-    slr_year=r"20[2-9]0|21[0-5]0",
+    ssp=r"nossp|ssp119|ssp126|ssp245|ssp370|ssp585",
+    slr_year=r"no|20[2-9]0|21[0-5]0",
     split=r"\d+",
-    rcp=r"no_cc|rcp26|rpc45|rcp60|rcp85",
-    cc_ref_year=r"historical|2100|20\d\d",
+    climate_scenario=r"historical|(rcp26|rpc45|rcp60|rcp85)_(2100|20\d\d)",
 
 
 rule create_centroids:
@@ -324,10 +323,15 @@ rule all_surges:
     input:
         expand(
             "surge/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-            climate_scenario=config["climate_scenarios"],
+            climate_scenario=[c for c in config["climate_scenarios"] if c!="historical"],
             ssp=config["slr_ssp"],
             slr_year=config["slr_years"],
         ),
+        expand(
+            "surge/surge_all_basins_nossp_noslr_historical.hdf5",
+            climate_scenario=config["climate_scenarios"],
+        ),
+
 
 rule tcs_per_countries:
     input:
@@ -342,6 +346,7 @@ rule tcs_per_countries:
         "logs/get_{country}_tcs_{climate_scenario}.log",
     script:
         "scripts/get_country_tc.py"
+
 
 rule surge_per_countries:
     input:

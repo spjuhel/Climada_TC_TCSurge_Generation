@@ -50,26 +50,36 @@ logger.info(f"Computing TC Surge events for genesis basin {basin}")
 logger.info(f"Reading TC events from {tropcyc}")
 tc = TropCyclone.from_hdf5(tropcyc)
 
-logger.info(f"Reading SLR dataframe from {slr} for year {slr_year}")
-slr_data = xr.open_dataset(slr)
-df = slr_data.to_dataframe()
-slr_data.close()
+if spp=="nossp":
+    assert slr_year=="no"
+    logger.info(f"Will use DEM data from {dem_topo_path}")
+    logger.info(f"Computing surges from TCs")
+    ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
+        tc, dem_topo_path, higher_res=snakemake.params.higher_res
+    )
+    logger.info(f"Writing to {snakemake.output[0]}")
+    ts_rescaled_slr.write_hdf5(snakemake.output[0])
+else:
+    logger.info(f"Reading SLR dataframe from {slr} for year {slr_year}")
+    slr_data = xr.open_dataset(slr)
+    df = slr_data.to_dataframe()
+    slr_data.close()
 
-df = df.loc[pd.IndexSlice[:, :, slr_year]]
-df.reset_index(drop=True, inplace=True)
-df = df[~df["sea_level_change"].isna()]
-gdf = gpd.GeoDataFrame(
-    data=df, geometry=gpd.points_from_xy(df["lon"], df["lat"]), crs="EPSG:4326"
-)
-gdf = gdf.fillna(0)
+    df = df.loc[pd.IndexSlice[:, :, slr_year]]
+    df.reset_index(drop=True, inplace=True)
+    df = df[~df["sea_level_change"].isna()]
+    gdf = gpd.GeoDataFrame(
+        data=df, geometry=gpd.points_from_xy(df["lon"], df["lat"]), crs="EPSG:4326"
+    )
+    gdf = gdf.fillna(0)
 
-logger.info(f"Will use DEM data from {dem_topo_path}")
-## read by the method nothing to do here
+    logger.info(f"Will use DEM data from {dem_topo_path}")
+    ## read by the method nothing to do here
 
+    logger.info(f"Computing surges from TCs")
+    ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
+        tc, dem_topo_path, higher_res=snakemake.params.higher_res, sea_level_rise_gdf=gdf
+    )
 
-ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
-    tc, dem_topo_path, higher_res=snakemake.params.higher_res, sea_level_rise_gdf=gdf
-)
-
-logger.info(f"Writing to {snakemake.output[0]}")
-ts_rescaled_slr.write_hdf5(snakemake.output[0])
+    logger.info(f"Writing to {snakemake.output[0]}")
+    ts_rescaled_slr.write_hdf5(snakemake.output[0])
