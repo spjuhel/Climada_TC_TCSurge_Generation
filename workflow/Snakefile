@@ -127,7 +127,7 @@ rule tcs_basin_year_split:
         "climada_env_TC"
     resources:
         mem_mb_per_cpu=get_mb_for_split,
-        runtime=240,
+        runtime=480,
     log:
         "logs/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.log",
     benchmark:
