@@ -320,7 +320,7 @@ rule tcs_per_countries:
     input:
         "tropcyc/{climate_scenario}/TCs_all_basins_{climate_scenario}.hdf5"
     output:
-        expand("tropcyc/{{climate_scenario}/TCs_{country}_{{climate_scenario}.hdf5", country=config["countries"])
+        expand("tropcyc/{{climate_scenario}}/TCs_{country}_{{climate_scenario}}.hdf5", country=config["countries"])
     params:
         countries = config["countries"]
     conda:
