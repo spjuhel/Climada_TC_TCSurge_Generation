@@ -41,11 +41,10 @@ cc = coco.CountryConverter()
 countries = snakemake.params.countries
 
 countries_iso_num = cc.convert(countries, to="ISOnumeric")
-countries_iso_3 = cc.convert(countries, to="ISO3")
 
 logger.info(f"Splitting TC events in countries for {climate_scenario} from {global_haz}")
 haz = Hazard.from_hdf5(global_haz)
-for cnt_id, country in zip(countries_iso_num, countries_iso_3):
+for cnt_id, country in zip(countries_iso_num, countries):
     haz_cnt = haz.select(reg_id=cnt_id)
     filename = f'tropcyc/{climate_scenario}/tropcyc_{country}_{climate_scenario}.hdf5'
     haz_cnt.write_hdf5(filename)
