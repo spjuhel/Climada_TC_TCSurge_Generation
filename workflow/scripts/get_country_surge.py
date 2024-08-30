@@ -1,7 +1,8 @@
+from pathlib import Path
 import sys
 import logging, traceback
 
-import numpy as np
+import country_converter as coco
 
 from climada.hazard import Hazard
 
@@ -38,10 +39,18 @@ global_haz = snakemake.input.global_haz
 climate_scenario = snakemake.wildcards.climate_scenario
 ssp = snakemake.wildcards.ssp
 slr_year = snakemake.wildcards.slr_year
+cc = coco.CountryConverter()
+countries = snakemake.params.countries
+
+countries_iso_num = cc.convert(countries, to="ISOnumeric")
 
 logger.info(f"Splitting Surge events in countries for {climate_scenario}/{ssp}/{slr_year}slr from {global_haz}")
 haz = Hazard.from_hdf5(global_haz)
-for cnt_id in np.unique(haz.centroids.region_id):
+haz.centroid.set_region_id()
+for cnt_id, country in zip(countries_iso_num, countries):
     haz_cnt = haz.select(reg_id=cnt_id)
-    filename = f'surge/surge_{str(cnt_id)}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5'
-    haz_cnt.write_hdf5(filename)
+    filename = f'surge/{climate_scenario}/surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5'
+    if haz_cnt:
+        haz_cnt.write_hdf5(filename)
+    else:
+        Path(filename).touch()
