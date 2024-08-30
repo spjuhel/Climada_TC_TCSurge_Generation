@@ -361,4 +361,6 @@ rule all_surges_countries:
         expand("surge/{climate_scenario}/surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
                country=config["countries"],
                climate_scenario=config["climate_scenarios"],
+               ssp=config["slr_ssp"],
+               slr_year=config["slr_years"],
                )
