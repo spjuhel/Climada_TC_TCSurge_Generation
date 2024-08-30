@@ -328,7 +328,7 @@ rule tcs_per_countries:
     resources:
         mem_mb_per_cpu=24000,
     log:
-        "logs/get_{country}_tcs_{climate_scenario}.log",
+        "logs/get_countries_tcs_{climate_scenario}.log",
     script:
         "scripts/get_country_tc.py"
 
