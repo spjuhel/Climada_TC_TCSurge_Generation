@@ -41,7 +41,7 @@ tropcyc = snakemake.input.tropcyc
 slr = snakemake.input.slr[0]
 slr_year = int(snakemake.wildcards.slr_year)
 dem_topo_path = snakemake.input.dem
-
+higher_res = snakemake.params.higher_res
 # Install exception handler
 sys.excepthook = handle_exception
 
@@ -54,12 +54,12 @@ if os.stat(tropcyc).st_size == 0:
 else:
     tc = TropCyclone.from_hdf5(tropcyc)
 
-    if spp=="nossp":
+    if ssp=="nossp":
         assert slr_year=="no"
         logger.info(f"Will use DEM data from {dem_topo_path}")
         logger.info(f"Computing surges from TCs")
         ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
-            tc, dem_topo_path, higher_res=snakemake.params.higher_res
+            tc, dem_topo_path, higher_res=higher_res
         )
         logger.info(f"Writing to {snakemake.output[0]}")
         ts_rescaled_slr.write_hdf5(snakemake.output[0])
@@ -82,7 +82,7 @@ else:
 
         logger.info(f"Computing surges from TCs")
         ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
-            tc, dem_topo_path, higher_res=snakemake.params.higher_res, sea_level_rise_gdf=gdf
+            tc, dem_topo_path, higher_res=higher_res, sea_level_rise_gdf=gdf
         )
 
         logger.info(f"Writing to {snakemake.output[0]}")

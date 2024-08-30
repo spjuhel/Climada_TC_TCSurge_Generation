@@ -223,7 +223,7 @@ rule apply_climate_change:
         "scripts/apply_climate_change.py"
 
 
-checkpoint split_basin_year_TCs:
+checkpoint split_TCs:
     """Split TCs into files with at most `max_tcs_per_split` tracks"""
     input:
         tropcyc="tropcyc/{climate_scenario}/TCs_all_basins_{climate_scenario}.hdf5",
@@ -234,7 +234,7 @@ checkpoint split_basin_year_TCs:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=8000,
+        mem_mb_per_cpu=24000,
         runtime=240,
     log:
         "logs/split_TCs_{climate_scenario}.log",
@@ -242,7 +242,7 @@ checkpoint split_basin_year_TCs:
         "scripts/split_TCs.py"
 
 
-rule surges_basin_year_split:
+rule surges_split:
     input:
         tropcyc="tropcyc/{climate_scenario}/splits/TCs_{climate_scenario}_split_{split}.hdf5",
         slr=expand(
@@ -251,26 +251,26 @@ rule surges_basin_year_split:
         ),
         dem=config["dem_topo_path"],
     output:
-        "surge/{climate_scenario}/splits/surges_{ssp}_{slr_year}slr_{climate_scenario}_split_{split}.hdf5",
+        "surge/{climate_scenario}/splits/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}_split_{split}.hdf5",
     params:
         higher_res=config["higher_res_surge"],
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=16000,
+        mem_mb_per_cpu=24000,
         runtime=240,
     log:
         "logs/generate_TCs_{ssp}_{slr_year}slr_{climate_scenario}_{split}.log",
     benchmark:
         "benchmark/generate_TCs_{ssp}_{slr_year}slr_{climate_scenario}_{split}.tsv",
     script:
-        "scripts/generate_TCs_surges_basin_year.py"
+        "scripts/generate_TCs_surge_basin_year.py"
 
 
 def aggregate_surges(wildcards):
-    checkpoint_output = checkpoints.split_basin_year_TCs.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.split_TCs.get(**wildcards).output[0]
     return expand(
-        "surge/{{climate_scenario}}/splits/surges_{{ssp}}_{{slr_year}}slr_{{climate_scenario}}_split_{split}.hdf5",
+        "surge/{{climate_scenario}}/splits/surge_all_basins_{{ssp}}_{{slr_year}}slr_{{climate_scenario}}_split_{split}.hdf5",
         split=glob_wildcards(
             os.path.join(
                 os.getcwd(),
@@ -285,7 +285,7 @@ rule gather_split_surges:
     input:
         aggregate_surges,
     output:
-        "surge/{climate_scenario}/surges_{ssp}_{slr_year}slr_all_{climate_scenario}.hdf5",
+        "surge/{climate_scenario}/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
     conda:
         "climada_env_TC"
     resources:
