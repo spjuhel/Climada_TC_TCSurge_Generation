@@ -334,7 +334,7 @@ rule tcs_per_countries:
 
 rule all_tcs_countries:
     input:
-        expand("tropcyc/{climate_scenario}/TCs_{country}_{climate_scenario}.hdf5",
+        expand("tropcyc/{climate_scenario}/tropcyc_{country}_{climate_scenario}.hdf5",
                country=config["countries"],
                climate_scenario=config["climate_scenarios"],
                )
