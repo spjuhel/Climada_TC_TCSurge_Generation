@@ -47,13 +47,17 @@ higher_res = snakemake.params.higher_res
 logger.info(f"Reading TC events from {tropcyc}")
 if os.stat(tropcyc).st_size == 0:
     logger.info(
-        f"File is empty, which probably means there is no track data for this basin-year. Ignoring."
+        f"File is empty, which probably means there is no track data for this country. Ignoring."
     )
     Path(snakemake.output[0]).touch()
 else:
     tc = TropCyclone.from_hdf5(tropcyc)
-
-    if ssp=="nossp":
+    if tc.intensity.size == 0:
+        logger.info(
+            f"No event with intensity > 0 for this country. Ignoring."
+        )
+        Path(snakemake.output[0]).touch()
+    elif ssp=="nossp":
         assert slr_year=="no"
         logger.info(f"Will use DEM data from {dem_topo_path}")
         logger.info(f"Computing surges from TCs")
