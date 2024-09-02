@@ -24,7 +24,7 @@ the wind field at a 0.008 degrees (~29 arcsec).
 Copyright (C) 2024  Samuel Juhel
 """
 
-tracks_year_range = list(range(config["start"], config["end"]+1, 1))
+tracks_year_range = list(range(config["start"], config["end"] + 1, 1))
 
 
 wildcard_constraints:
@@ -110,8 +110,10 @@ checkpoint split_basin_year_tracks:
     script:
         "scripts/split_synth_tracks.py"
 
+
 def get_mb_for_split(wildcards, attempt):
-    return max((attempt-1) * 64000,20000)
+    return max((attempt - 1) * 64000, 20000)
+
 
 rule tcs_basin_year_split:
     """Generate tropical cyclones from synthetic tracks (for a split file)"""
@@ -131,7 +133,7 @@ rule tcs_basin_year_split:
     log:
         "logs/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.log",
     benchmark:
-        "benchmark/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.tsv",
+        "benchmark/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.tsv"
     script:
         "scripts/generate_TCs_basin_year.py"
 
@@ -203,7 +205,8 @@ rule concatenate_all_basins_tcs:
 
 rule all_historical_tcs:
     input:
-        "tropcyc/historical/TCs_all_basins_historical.hdf5"
+        "tropcyc/historical/TCs_all_basins_historical.hdf5",
+
 
 rule apply_climate_change:
     input:
@@ -211,7 +214,9 @@ rule apply_climate_change:
     output:
         expand(
             "tropcyc/{climate_scenario}/TCs_all_basins_{climate_scenario}.hdf5",
-            climate_scenario=[c for c in config["climate_scenarios"] if c!="historical"],
+            climate_scenario=[
+                c for c in config["climate_scenarios"] if c != "historical"
+            ],
         ),
     resources:
         mem_mb_per_cpu=24000,
@@ -223,80 +228,6 @@ rule apply_climate_change:
         "scripts/apply_climate_change.py"
 
 
-checkpoint split_TCs:
-    """Split TCs into files with at most `max_tcs_per_split` tracks"""
-    input:
-        tropcyc="tropcyc/{climate_scenario}/TCs_all_basins_{climate_scenario}.hdf5",
-    output:
-        directory("tropcyc/{climate_scenario}/splits/"),
-    params:
-        max_tcs=config["max_tcs_per_split"],
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=24000,
-        runtime=240,
-    log:
-        "logs/split_TCs_{climate_scenario}.log",
-    script:
-        "scripts/split_TCs.py"
-
-
-rule surges_split:
-    input:
-        tropcyc="tropcyc/{climate_scenario}/splits/TCs_{climate_scenario}_split_{split}.hdf5",
-        slr=expand(
-            "{slr_data}/{{ssp}}/total_{{ssp}}_medium_confidence_values.nc",
-            slr_data=config["slr_data_path"],
-        ),
-        dem=config["dem_topo_path"],
-    output:
-        "surge/{climate_scenario}/splits/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}_split_{split}.hdf5",
-    params:
-        higher_res=config["higher_res_surge"],
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=24000,
-        runtime=240,
-    log:
-        "logs/generate_TCs_{ssp}_{slr_year}slr_{climate_scenario}_{split}.log",
-    benchmark:
-        "benchmark/generate_TCs_{ssp}_{slr_year}slr_{climate_scenario}_{split}.tsv",
-    script:
-        "scripts/generate_TCs_surge_basin_year.py"
-
-
-def aggregate_surges(wildcards):
-    checkpoint_output = checkpoints.split_TCs.get(**wildcards).output[0]
-    return expand(
-        "surge/{{climate_scenario}}/splits/surge_all_basins_{{ssp}}_{{slr_year}}slr_{{climate_scenario}}_split_{split}.hdf5",
-        split=glob_wildcards(
-            os.path.join(
-                os.getcwd(),
-                checkpoint_output,
-                "TCs_{climate_scenario}_split_{split}.hdf5",
-            )
-        ).split,
-    )
-
-
-rule gather_split_surges:
-    input:
-        aggregate_surges,
-    output:
-        "surge/{climate_scenario}/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=16000,
-        runtime=240,
-    log:
-        "logs/gather_split_surges_{ssp}_{slr_year}slr_{climate_scenario}.log",
-    script:
-        "scripts/gather_split_surges.py"
-
-
 rule all_tcs:
     input:
         expand(
@@ -305,24 +236,16 @@ rule all_tcs:
         ),
 
 
-rule all_surges:
-    input:
-        expand(
-            "surge/{climate_scenario}/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-            climate_scenario=[c for c in config["climate_scenarios"] if c!="historical"],
-            ssp=config["slr_ssp"],
-            slr_year=config["slr_years"],
-        ),
-        "surge/historical/surge_all_basins_nossp_noslr_historical.hdf5"
-
-
 rule tcs_per_countries:
     input:
-        global_haz="tropcyc/{climate_scenario}/TCs_all_basins_{climate_scenario}.hdf5"
+        global_haz="tropcyc/{climate_scenario}/TCs_all_basins_{climate_scenario}.hdf5",
     output:
-        expand("tropcyc/{{climate_scenario}}/tropcyc_{country}_{{climate_scenario}}.hdf5", country=config["countries"])
+        expand(
+            "tropcyc/{{climate_scenario}}/by_country/tropcyc_{country}_{{climate_scenario}}.hdf5",
+            country=config["countries"],
+        ),
     params:
-        countries = config["countries"]
+        countries=config["countries"],
     conda:
         "climada_env_TC"
     resources:
@@ -332,35 +255,47 @@ rule tcs_per_countries:
     script:
         "scripts/get_country_tc.py"
 
+
 rule all_tcs_countries:
     input:
-        expand("tropcyc/{climate_scenario}/tropcyc_{country}_{climate_scenario}.hdf5",
-               country=config["countries"],
-               climate_scenario=config["climate_scenarios"],
-               )
+        expand(
+            "tropcyc/{climate_scenario}/by_country/tropcyc_{country}_{climate_scenario}.hdf5",
+            country=config["countries"],
+            climate_scenario=config["climate_scenarios"],
+        ),
 
-rule surge_per_countries:
+
+rule surges_countries:
     input:
-        "surge/{climate_scenario}/surge_all_basins_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
+        tropcyc="tropcyc/{climate_scenario}/by_country/tropcyc_{country}_{climate_scenario}.hdf5",
+        slr=expand(
+            "{slr_data}/{{ssp}}/total_{{ssp}}_medium_confidence_values.nc",
+            slr_data=config["slr_data_path"],
+        ),
+        dem=config["dem_topo_path"],
     output:
-        expand("surge/{{climate_scenario}}/surge_{country}_{{ssp}}_{{slr_year}}slr_{{climate_scenario}}.hdf5",
-               country=config["countries"]
-               )
+        "surge/{climate_scenario}/by_country/surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
+    params:
+        higher_res=config["higher_res_surge"],
     conda:
         "climada_env_TC"
     resources:
         mem_mb_per_cpu=24000,
+        runtime=240,
     log:
-        "logs/get_country_surge_{ssp}_{slr_year}slr_{climate_scenario}.log",
+        "logs/generate_surges_{country}_{ssp}_{slr_year}slr_{climate_scenario}.log",
+    benchmark:
+        "benchmark/generate_surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.tsv"
     script:
-        "scripts/get_country_surge.py"
+        "scripts/generate_TCs_surges_country.py"
 
 
 rule all_surges_countries:
     input:
-        expand("surge/{climate_scenario}/surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-               country=config["countries"],
-               climate_scenario=config["climate_scenarios"],
-               ssp=config["slr_ssp"],
-               slr_year=config["slr_years"],
-               )
+        expand(
+            "surge/{climate_scenario}/by_country/surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
+            country=config["countries"],
+            climate_scenario=config["climate_scenarios"],
+            ssp=config["slr_ssp"],
+            slr_year=config["slr_years"],
+        ),

@@ -33,17 +33,16 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         )
     )
 
+# Install exception handler
+sys.excepthook = handle_exception
 
 climate_scenario = snakemake.wildcards.climate_scenario
-split = snakemake.wildcards.split
 ssp = snakemake.wildcards.ssp
 tropcyc = snakemake.input.tropcyc
 slr = snakemake.input.slr[0]
 slr_year = int(snakemake.wildcards.slr_year)
 dem_topo_path = snakemake.input.dem
 higher_res = snakemake.params.higher_res
-# Install exception handler
-sys.excepthook = handle_exception
 
 logger.info(f"Reading TC events from {tropcyc}")
 if os.stat(tropcyc).st_size == 0:
