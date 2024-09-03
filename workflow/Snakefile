@@ -265,6 +265,9 @@ rule all_tcs_countries:
         ),
 
 
+def get_mb_for_country_surge(wildcards, attempt):
+    return max((attempt - 1) * 64000, 24000)
+
 rule surges_countries:
     input:
         tropcyc="tropcyc/{climate_scenario}/by_country/tropcyc_{country}_{climate_scenario}.hdf5",
@@ -280,7 +283,7 @@ rule surges_countries:
     conda:
         "climada_env_TC"
     resources:
-        mem_mb_per_cpu=24000,
+        mem_mb_per_cpu=get_mb_for_country_surge,
         runtime=240,
     log:
         "logs/generate_surges_{country}_{ssp}_{slr_year}slr_{climate_scenario}.log",
