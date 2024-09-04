@@ -39,10 +39,13 @@ sys.excepthook = handle_exception
 
 
 climate_scenarios = snakemake.config["climate_scenarios"]
-climate_sce_re = re.compile(r"historical|rcp(\d)(\d)_(2100|20\d\d)")
+climate_sce_re = re.compile(r"no_cc|rcp(\d)(\d)_(2100|20\d\d)")
 tropcyc = snakemake.input.tropcyc
+tc_res_str = snakemake.params.tc_res_str
+nsynth = snakemake.params.nsynth
+start_period = snakemake.params.start_period
+end_period = snakemake.params.end_period
 
-logger.info(f"Applying climate change scenario.")
 
 logger.info(f"Reading TC events from {tropcyc}")
 if os.stat(tropcyc).st_size == 0:
@@ -50,7 +53,7 @@ if os.stat(tropcyc).st_size == 0:
         f"File is empty, which probably means there is no TCs data. Ignoring."
     )
     for climate_scenario in climate_scenarios:
-        out = f"tropcyc/{climate_scenario}/TCs_all_basins_all_{climate_scenario}.hdf5"
+        out = f"tropcyc/{climate_scenario}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_{climate_scenario}.hdf5"
         logger.info(f"Writing to {out}")
         Path(out).touch()
 else:
@@ -59,11 +62,11 @@ else:
         scenario = climate_sce_re.match(climate_scenario)
         if not scenario:
             raise ValueError(f"Not a valid climate scenario: {climate_scenario}")
-        if climate_scenario != "historical":
+        if climate_scenario != "no_cc":
             rcp_arg = f"{scenario.group(1)}.{scenario.group(2)}"
             cc_ref_year = int(scenario.group(3))
             logger.info(f"Applying climate change (rcp{rcp_arg} - {cc_ref_year})")
             tc_clim = tc.apply_climate_scenario_knu(target_year=int(cc_ref_year), scenario=rcp_arg)
-            out = f"tropcyc/{climate_scenario}/TCs_all_basins_{climate_scenario}.hdf5"
+            out = f"tropcyc/{climate_scenario}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_{climate_scenario}.hdf5"
             logger.info(f"Writing to {out}")
             tc_clim.write_hdf5(out)

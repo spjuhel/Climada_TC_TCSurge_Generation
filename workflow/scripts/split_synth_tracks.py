@@ -59,7 +59,7 @@ else:
         tr.data = tr.data[n : n + max_tracks]
         filename = (
             outdir
-            / f"IBTracs_synth_{basin}_{year}_split_{split}.hdf5"
+            / f"IBTracs_{snakemake.config['nsynth']}synth_{basin}_{year}_split_{split}.hdf5"
         )
         logger.info(f"Writing to {filename}")
         tr.write_hdf5(filename)

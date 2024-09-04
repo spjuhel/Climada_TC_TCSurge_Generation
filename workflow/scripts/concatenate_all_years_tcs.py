@@ -36,7 +36,9 @@ basin = snakemake.wildcards.genesis_basin
 
 logger.info(f"Regrouping all periods for basin: {basin}")
 tcfiles = [fname for fname in snakemake.input if os.stat(fname).st_size != 0]
-tcs = TropCyclone.concat([TropCyclone.from_hdf5(tcfile) for tcfile in tcfiles])
+tcs_set = [TropCyclone.from_hdf5(tcfile) for tcfile in tcfiles]
+tcs_set = [tc for tc in tcs_set if tc.size>0]
+tcs = TropCyclone.concat(tcs_set)
 tcs.frequency /= (snakemake.config["end"] - snakemake.config["start"])
 logger.info(f"Writing to {snakemake.output[0]}")
 tcs.write_hdf5(snakemake.output[0])

@@ -40,13 +40,14 @@ sys.excepthook = handle_exception
 basin = snakemake.wildcards.genesis_basin
 year = snakemake.wildcards.tracks_year
 split = snakemake.wildcards.split
+out = snakemake.output[0]
 logger.info(f"Computing TC events for genesis basin {basin} for {year}")
 
 logger.info(f"Loading TC tracks from {snakemake.input.tracks}")
 
 if os.stat(snakemake.input[0]).st_size == 0:
     logger.info(f"File is empty, which probably means there is no track data for this basin-year. Ignoring")
-    Path(snakemake.output[0]).touch()
+    Path(out).touch()
 else:
     tracks = TCTracks.from_hdf5(snakemake.input.tracks)
     logger.info(f"There are {len(tracks.data)} tracks.")
@@ -63,6 +64,5 @@ else:
     tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks, max_memory_gb=snakemake.params.max_memory_gb)
     freq_corr = 1 / snakemake.config["nsynth"]
     tc.frequency = np.ones(tc.event_id.size)*freq_corr
-    out = f"tropcyc/{basin}/historical/TCs_{basin}_{year}_historical_split_{split}.hdf5"
     logger.info(f"Writing to {out}")
     tc.write_hdf5(out)

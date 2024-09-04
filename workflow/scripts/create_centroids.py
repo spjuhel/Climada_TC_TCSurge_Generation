@@ -47,6 +47,6 @@ sys.excepthook = handle_exception
 
 
 logger.info(f"Creating global centroids")
-cent = create_litpop_matching_centroids(res=snakemake.params.centroid_resolution)
+cent = create_litpop_matching_centroids(res=snakemake.params.centroids_resolution)
 logger.info(f"Writing to {snakemake.output[0]}")
 cent.write_hdf5(snakemake.output[0])

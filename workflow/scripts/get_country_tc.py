@@ -4,7 +4,7 @@ import logging, traceback
 
 import country_converter as coco
 
-from climada.hazard import Hazard
+from climada.hazard import TropCyclone
 
 logging.basicConfig(
     filename=snakemake.log[0],
@@ -37,17 +37,21 @@ sys.excepthook = handle_exception
 
 climate_scenario = snakemake.wildcards.climate_scenario
 global_haz = snakemake.input.global_haz
-cc = coco.CountryConverter()
+tc_res_str = snakemake.params.tc_res_str
+nsynth = snakemake.params.nsynth
+start_period = snakemake.params.start_period
+end_period = snakemake.params.end_period
 countries = snakemake.params.countries
 
+cc = coco.CountryConverter()
 countries_iso_num = cc.convert(countries, to="ISOnumeric")
 
 logger.info(f"Splitting TC events in countries for {climate_scenario} from {global_haz}")
-haz = Hazard.from_hdf5(global_haz)
+haz = TropCyclone.from_hdf5(global_haz)
 haz.centroids.set_region_id()
 for cnt_id, country in zip(countries_iso_num, countries):
     haz_cnt = haz.select(reg_id=cnt_id)
-    filename = f'tropcyc/{climate_scenario}/tropcyc_{country}_{climate_scenario}.hdf5'
+    filename = f'tropcyc/{climate_scenario}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{country}_{start_period}_to_{end_period}_{climate_scenario}.hdf5'
     if haz_cnt:
         haz_cnt.write_hdf5(filename)
     else:
