@@ -305,13 +305,19 @@ rule all_tcs_countries:
 def get_mb_for_country_surge(wildcards, attempt):
     return max((attempt - 1) * 64000, 24000)
 
+def use_slr(wildcards):
+    return wildcards.ssp != "nossp"
 
 rule surges_countries:
     input:
         tropcyc=f"tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
-        slr=expand(
-            "{slr_data}/{{ssp}}/total_{{ssp}}_medium_confidence_values.nc",
-            slr_data=config["slr_data_path"],
+        slr=branch(
+            use_slr,
+            then=expand(
+                "{slr_data}/{{ssp}}/total_{{ssp}}_medium_confidence_values.nc",
+                slr_data=config["slr_data_path"],
+            ),
+            otherwise=""
         ),
         dem=config["dem_topo_path"],
     output:
