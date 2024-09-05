@@ -317,7 +317,6 @@ rule surges_countries:
                 "{slr_data}/{{ssp}}/total_{{ssp}}_medium_confidence_values.nc",
                 slr_data=config["slr_data_path"],
             ),
-            otherwise=""
         ),
         dem=config["dem_topo_path"],
     output:
