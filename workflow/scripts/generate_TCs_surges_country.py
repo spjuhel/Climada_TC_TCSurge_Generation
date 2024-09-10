@@ -39,7 +39,6 @@ sys.excepthook = handle_exception
 climate_scenario = snakemake.wildcards.climate_scenario
 ssp = snakemake.wildcards.ssp
 tropcyc = snakemake.input.tropcyc
-slr_year = int(snakemake.wildcards.slr_year)
 dem_topo_path = snakemake.input.dem
 higher_res = snakemake.params.higher_res
 
@@ -57,7 +56,7 @@ else:
         )
         Path(snakemake.output[0]).touch()
     elif ssp=="nossp":
-        assert slr_year=="no"
+        assert snakemake.wildcards.slr_year=="no"
         logger.info(f"Will use DEM data from {dem_topo_path}")
         logger.info(f"Computing surges from TCs")
         ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
@@ -67,6 +66,7 @@ else:
         ts_rescaled_slr.write_hdf5(snakemake.output[0])
     else:
         slr = snakemake.input.slr[0]
+        slr_year = int(snakemake.wildcards.slr_year)
         logger.info(f"Reading SLR dataframe from {slr} for year {slr_year}")
         slr_data = xr.open_dataset(slr)
         df = slr_data.to_dataframe()
