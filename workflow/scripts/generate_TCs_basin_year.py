@@ -62,7 +62,7 @@ else:
     tracks.equal_timestep(0.1)
     logger.info(f"Computing TC wind-fields")
     tc = TropCyclone.from_tracks(tracks, centroids=cent_tracks, max_memory_gb=snakemake.params.max_memory_gb)
-    freq_corr = 1 / snakemake.config["nsynth"]
+    freq_corr = 1 / (snakemake.config["nsynth"] + 1) # Count the original track too !
     tc.frequency = np.ones(tc.event_id.size)*freq_corr
     logger.info(f"Writing to {out}")
     tc.write_hdf5(out)
