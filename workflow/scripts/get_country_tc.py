@@ -43,8 +43,9 @@ start_period = snakemake.params.start_period
 end_period = snakemake.params.end_period
 countries = snakemake.params.countries
 
+cc = coco.CountryConverter()
+
 if countries != "all":
-    cc = coco.CountryConverter()
     countries_iso_num = cc.convert(countries, to="ISOnumeric")
 
 logger.info(f"Splitting TC events in countries for {climate_scenario} from {global_haz}")
