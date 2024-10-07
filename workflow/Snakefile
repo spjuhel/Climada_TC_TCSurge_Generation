@@ -276,7 +276,7 @@ rule tcs_per_countries:
     output:
         expand(
             "tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{country}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
-            country=config["countries"],
+            country=lambda w, input : get_all_countries(input.global_haz, config["countries"]),
             tc_res_str=tc_res_str,
             nsynth=nsynth,
             start_period=start_period,
@@ -297,19 +297,22 @@ rule tcs_per_countries:
     script:
         "scripts/get_country_tc.py"
 
-
-rule all_tcs_countries:
-    input:
-        expand(
+def get_all_tcs_countries(wildcards):
+    haz = f"tropcyc/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_no_cc.hdf5"
+    countries = get_all_countries(haz, config["countries"])
+    return expand(
             "tropcyc/{climate_scenario}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{country}_{start_period}_to_{end_period}_{climate_scenario}.hdf5",
             climate_scenario=config["climate_scenarios"],
-            country=config["countries"],
+            country=countries,
             tc_res_str=tc_res_str,
             nsynth=nsynth,
             start_period=start_period,
             end_period=end_period,
-        ),
+        )
 
+
+rule all_tcs_countries:
+    input: get_all_tcs_countries
 
 def get_mb_for_country_surge(wildcards, attempt):
     return max((attempt - 1) * 64000, 24000)
