@@ -340,7 +340,7 @@ rule surges_countries:
 
 def get_all_surges_countries(wildcards):
     countries_dir = checkpoints.tcs_per_countries.get(**wildcards).output[0]
-    countries = glob_wildcards(f"tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5").country
+    countries = glob_wildcards(f"tropcyc/no_cc/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_no_cc.hdf5").country
     all_surges_countries = expand(
             "surge/{climate_scenario}/by_country/surge_{surge_res_str}arcsec_{nsynth}synth_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
             country=countries,
