@@ -362,7 +362,7 @@ def get_all_surges_countries(wildcards):
             start_period=start_period,
             end_period=end_period,
         )
-    return all_tcs_countries
+    return all_surges_countries
 
 rule all_surges_countries:
     input:
