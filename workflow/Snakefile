@@ -338,11 +338,12 @@ rule surges_countries:
         "scripts/generate_TCs_surges_country.py"
 
 
-rule all_surges_countries:
-    input:
-        expand(
+def get_all_surges_countries(wildcards):
+    countries_dir = checkpoints.tcs_per_countries.get(**wildcards).output[0]
+    countries = glob_wildcards(f"tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5").country
+    all_surges_countries = expand(
             "surge/{climate_scenario}/by_country/surge_{surge_res_str}arcsec_{nsynth}synth_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-            country=config["countries"],
+            country=countries,
             climate_scenario=config["climate_scenarios"],
             ssp=config["slr_ssp"],
             slr_year=config["slr_years"],
@@ -350,10 +351,10 @@ rule all_surges_countries:
             nsynth=nsynth,
             start_period=start_period,
             end_period=end_period,
-        ),
+        ) + 
         expand(
             "surge/{climate_scenario}/by_country/surge_{surge_res_str}arcsec_{nsynth}synth_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-            country=config["countries"],
+            country=countries,
             climate_scenario=config["climate_scenarios"],
             ssp="nossp",
             slr_year="no",
@@ -361,4 +362,9 @@ rule all_surges_countries:
             nsynth=nsynth,
             start_period=start_period,
             end_period=end_period,
-        ),
+        )
+    return all_tcs_countries
+
+rule all_surges_countries:
+    input:
+        get_all_surges_countries
