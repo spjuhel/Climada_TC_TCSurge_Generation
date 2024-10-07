@@ -260,6 +260,15 @@ rule all_tcs:
             end_period=end_period,
         ),
 
+def get_all_countries(haz, countries):
+    if countries == "all":
+        import country_converter as coco
+        cc = coco.CountryConverter()
+        haz = TropCyclone.from_hdf5(haz)
+        haz.centroids.set_region_id()
+        countries_tmp = cc.convert(haz.centroids.gdf["region_id"].unique(), to="ISO3", src="ISOnumeric")
+        countries = [c for c in countries_tmp if c != "not found"]
+    return countries
 
 rule tcs_per_countries:
     input:
@@ -274,7 +283,7 @@ rule tcs_per_countries:
             end_period=end_period,
         ),
     params:
-        countries=config["countries"],
+        countries= lambda w, input : get_all_countries(input.global_haz, config["countries"]),
         tc_res_str=tc_res_str,
         nsynth=nsynth,
         start_period=start_period,
