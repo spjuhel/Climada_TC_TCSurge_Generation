@@ -351,8 +351,7 @@ def get_all_surges_countries(wildcards):
             nsynth=nsynth,
             start_period=start_period,
             end_period=end_period,
-        ) + 
-        expand(
+        ) + expand(
             "surge/{climate_scenario}/by_country/surge_{surge_res_str}arcsec_{nsynth}synth_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
             country=countries,
             climate_scenario=config["climate_scenarios"],
