@@ -270,20 +270,13 @@ def get_all_countries(haz, countries):
         countries = [c for c in countries_tmp if c != "not found"]
     return countries
 
-rule tcs_per_countries:
+checkpoint tcs_per_countries:
     input:
         global_haz=f"tropcyc/{{climate_scenario}}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
     output:
-        expand(
-            "tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{country}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
-            country=lambda w, input : get_all_countries(input.global_haz, config["countries"]),
-            tc_res_str=tc_res_str,
-            nsynth=nsynth,
-            start_period=start_period,
-            end_period=end_period,
-        ),
+        directory("tropcyc/{{climate_scenario}}/by_country/")
     params:
-        countries= lambda w, input : get_all_countries(input.global_haz, config["countries"]),
+        countries = lambda w, input : get_all_countries(input.global_haz, config["countries"]),
         tc_res_str=tc_res_str,
         nsynth=nsynth,
         start_period=start_period,
@@ -298,18 +291,15 @@ rule tcs_per_countries:
         "scripts/get_country_tc.py"
 
 def get_all_tcs_countries(wildcards):
-    haz = f"tropcyc/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_no_cc.hdf5"
-    countries = get_all_countries(haz, config["countries"])
-    return expand(
-            "tropcyc/{climate_scenario}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{country}_{start_period}_to_{end_period}_{climate_scenario}.hdf5",
-            climate_scenario=config["climate_scenarios"],
-            country=countries,
-            tc_res_str=tc_res_str,
-            nsynth=nsynth,
-            start_period=start_period,
-            end_period=end_period,
-        )
-
+    countries_dir = checkpoints.tcs_per_countries.get(**wildcards).output[0]
+    countries = glob_wildcards(f"tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5").country
+    all_tcs_countries = expand("tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
+                                countries = countries,
+                                tc_res_str=tc_res_str,
+                                nsynth=nsynth,
+                                start_period=start_period,
+                                end_period=end_period)
+    return all_tcs_countries
 
 rule all_tcs_countries:
     input: get_all_tcs_countries
