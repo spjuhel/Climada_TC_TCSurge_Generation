@@ -59,11 +59,16 @@ else:
         assert snakemake.wildcards.slr_year=="no"
         logger.info(f"Will use DEM data from {dem_topo_path}")
         logger.info(f"Computing surges from TCs")
-        ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
-            tc, dem_topo_path, higher_res=higher_res
-        )
-        logger.info(f"Writing to {snakemake.output[0]}")
-        ts_rescaled_slr.write_hdf5(snakemake.output[0])
+        try:
+            ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
+                tc, dem_topo_path, higher_res=higher_res
+            )
+            logger.info(f"Writing to {snakemake.output[0]}")
+            ts_rescaled_slr.write_hdf5(snakemake.output[0])
+        except ValueError as err:
+            logger.info(f"The following error happened when generating the surge:\n{err}")
+            logger.info(f"Touching {snakemake.output[0]}")
+            Path(snakemake.output[0]).touch()
     else:
         slr = snakemake.input.slr[0]
         slr_year = int(snakemake.wildcards.slr_year)
@@ -84,9 +89,14 @@ else:
         ## read by the method nothing to do here
 
         logger.info(f"Computing surges from TCs")
-        ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
-            tc, dem_topo_path, higher_res=higher_res, sea_level_rise_gdf=gdf
-        )
-
-        logger.info(f"Writing to {snakemake.output[0]}")
-        ts_rescaled_slr.write_hdf5(snakemake.output[0])
+        try:
+            ts_rescaled_slr = TCSurgeBathtub.from_tc_winds(
+                tc, dem_topo_path, higher_res=higher_res, sea_level_rise_gdf=gdf
+            )
+            
+            logger.info(f"Writing to {snakemake.output[0]}")
+            ts_rescaled_slr.write_hdf5(snakemake.output[0])
+        except ValueError as err:
+            logger.info(f"The following error happened when generating the surge:\n{err}")
+            logger.info(f"Touching {snakemake.output[0]}")
+            Path(snakemake.output[0]).touch()
