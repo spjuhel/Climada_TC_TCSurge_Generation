@@ -34,6 +34,7 @@ rule create_centroids:
         "logs/create_centroids_{tc_res_str}.log",
     resources:
         mem_mb_per_cpu=32000,
+        mem_mb = 32000
     conda:
         "../envs/climada_env.yaml"
     script:
