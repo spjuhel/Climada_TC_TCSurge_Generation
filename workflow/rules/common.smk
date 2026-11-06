@@ -28,8 +28,6 @@ rule create_centroids:
     """Creates global centroids grid at `centroid_resolution` resolution"""
     output:
         "global_{tc_res_str}arcsec_centroids.hdf5",
-    params:
-        centroids_resolution=config["centroids_resolution"]/3600,
     log:
         "logs/create_centroids_{tc_res_str}.log",
     resources:
