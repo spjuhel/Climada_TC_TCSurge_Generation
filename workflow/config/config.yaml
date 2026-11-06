@@ -1,3 +1,5 @@
+centroids_resolution: 150
+
 track_models:
   ibtracs:
     genesis_basins: [NA, SA, EP, WP, SP, SI, NI]
