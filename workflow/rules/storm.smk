@@ -9,7 +9,7 @@ rule storm_all_basins_no_cc:
         ),
     output:
         tc_global_path("storm", "no_cc"),
-    conda: "climada_env_TC"
+    conda: "../envs/climada_env.yaml"
     resources: mem_mb_per_cpu=24000
     log: "logs/concatenate_storm_no_cc.log"
     script: "../scripts/concatenate_all_basins_tcs.py"
@@ -31,21 +31,22 @@ rule storm_tcs_basin_ens:
     """Wind fields from STORM tracks for one basin and ensemble member"""
     input:
         tracks=storm_tracks_file,
-        centroids=f"global_{tc_res_str}arcsec_centroids.hdf5",
+        centroids="global_{tc_res_str}arcsec_centroids.hdf5",
     output:
-        f"tropcyc/storm/no_cc/by_basin/tropcyc_{tc_res_str}arcsec_{{basin}}_{{ens}}.hdf5",
+        "tropcyc/storm/no_cc/by_basin/tropcyc_{tc_res_str}arcsec_{basin}_{ens}.hdf5",
     params:
         wind_model=TRACK_MODELS["storm"]["wind_model"],
         time_step_h=1.0,
         max_memory_gb=14,
+        event_freq=1/1000,
     conda:
-        "climada_env_TC"
+        "../envs/climada_env.yaml"
     resources:
         mem_mb_per_cpu=get_mb_for_split,  # defined in ibtracs.smk
         runtime=480,
     log:
-        "logs/storm_tcs_{basin}_{ens}.log",
+        "logs/storm_tcs_{tc_res_str}_{basin}_{ens}.log",
     benchmark:
-        "benchmark/storm_tcs_{basin}_{ens}.tsv"
+        "benchmark/storm_tcs_{tc_res_str}_{basin}_{ens}.tsv"
     script:
         "../scripts/generate_TCs_storm_basin_ens.py"
