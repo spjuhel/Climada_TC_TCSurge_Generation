@@ -1,5 +1,3 @@
-import os
-
 rule storm_all_basins_no_cc:
     """STORM is present-climate only, so its output is directly the `no_cc` hazard."""
     input:
@@ -74,7 +72,7 @@ checkpoint storm_split_basin_tracks:
 rule storm_tcs_basin_split_ens:
     """Wind fields from STORM tracks for one basin and ensemble member"""
     input:
-        directory="tracks/storm/{genesis_basin}/member_{ens}/splits/",
+        out_directory="tracks/storm/{genesis_basin}/member_{ens}/splits/",
         tracks="tracks/storm/{genesis_basin}/member_{ens}/splits/STORM_{genesis_basin}_{ens}_split_{split}.hdf5",
         centroids="global_{tc_res_str}arcsec_centroids.hdf5",
     output:
@@ -131,7 +129,7 @@ rule storm_tcs_basin_ens_example:
 rule storm_tcs_basin:
     """Wind fields from STORM tracks for one basin"""
     input:
-        members = expand("tropcyc/storm/no_cc/{{genesis_basin}}/member_{ens}/STORM_{{tc_res_str}}arcsec_{{genesis_basin}}_{ens}_no_cc.hdf5", ens=[0,1])
+        tracks = expand("tropcyc/storm/no_cc/{{genesis_basin}}/member_{ens}/STORM_{{tc_res_str}}arcsec_{{genesis_basin}}_{ens}_no_cc.hdf5", ens=[0,1])
     output:
         "tropcyc/storm/no_cc/{genesis_basin}/STORM_{tc_res_str}arcsec_{genesis_basin}_no_cc.hdf5",
     conda:
@@ -143,7 +141,7 @@ rule storm_tcs_basin:
     benchmark:
         "benchmark/storm_tcs_{tc_res_str}_{genesis_basin}.tsv"
     script:
-        "../scripts/generate_TCs_storm_basin_ens.py"
+        "../scripts/concatenate_all_splits_storm_tcs.py"
 
 rule storm_tcs_basin_example:
     input:
