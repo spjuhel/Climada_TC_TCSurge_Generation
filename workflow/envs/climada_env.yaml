@@ -6,6 +6,6 @@ channels:
 dependencies:
   - python
   - climada=6.1.0
-  - climada-petals=6.1.0
-  - wbgapi
-  - pymrio>=0.5.0
+  - pip
+  - pip:
+      - dask[dataframe]
