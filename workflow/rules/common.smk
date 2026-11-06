@@ -27,13 +27,13 @@ SURGE_COUNTRY = (
 rule create_centroids:
     """Creates global centroids grid at `centroid_resolution` resolution"""
     output:
-        f"global_{tc_res_str}arcsec_centroids.hdf5",
+        "global_{tc_res_str}arcsec_centroids.hdf5",
     params:
         centroids_resolution=config["centroids_resolution"]/3600,
     log:
-        "logs/create_centroids.log",
+        "logs/create_centroids_{tc_res_str}.log",
     resources:
-        mem_mb_per_cpu=12000,
+        mem_mb_per_cpu=32000,
     conda:
         "../envs/climada_env.yaml"
     script:

@@ -57,7 +57,7 @@ rule storm_tcs_basin_ens:
 
 rule storm_tcs_basin_ens_example:
     input:
-        "tropcyc/storm/no_cc/by_basin/tropcyc_150arcsec_NI_0.hdf5",
+        "tropcyc/storm/no_cc/by_basin/tropcyc_600arcsec_NI_0.hdf5",
 
 rule storm_tcs_basin:
     """Wind fields from STORM tracks for one basin"""
@@ -78,4 +78,4 @@ rule storm_tcs_basin:
 
 rule storm_tcs_basin_example:
     input:
-        "tropcyc/storm/no_cc/by_basin/tropcyc_150arcsec_NI.hdf5",
+        "tropcyc/storm/no_cc/by_basin/tropcyc_600arcsec_NI.hdf5",
