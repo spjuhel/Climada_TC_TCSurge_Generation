@@ -12,7 +12,7 @@ rule tracks_basin_year:
     log:
         "logs/find_tracks_{genesis_basin}_{tracks_year}.log",
     script:
-        "scripts/find_tracks_basin_year.py"
+        "../scripts/find_tracks_basin_year.py"
 
 
 def synth_track_memb(wildcards, attempt):
@@ -35,7 +35,7 @@ rule synth_tracks_basin_year:
     log:
         "logs/generate_synths_tracks_{genesis_basin}_{tracks_year}.log",
     script:
-        "scripts/generate_synths_tracks_basin_year.py"
+        "../scripts/generate_synths_tracks_basin_year.py"
 
 
 # Naming is not automagic in the script!!!
@@ -55,11 +55,11 @@ checkpoint split_basin_year_tracks:
     log:
         "logs/split_synth_tracks_{genesis_basin}_{tracks_year}.log",
     script:
-        "scripts/split_synth_tracks.py"
+        "../scripts/split_synth_tracks.py"
 
 
 def get_mb_for_split(wildcards, attempt):
-    return max((attempt  1) * 64000, 20000)
+    return max((attempt - 1) * 64000, 20000)
 
 
 rule tcs_basin_year_split:
@@ -82,7 +82,7 @@ rule tcs_basin_year_split:
     benchmark:
         "benchmark/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.tsv"
     script:
-        "scripts/generate_TCs_basin_year.py"
+        "../scripts/generate_TCs_basin_year.py"
 
 
 def aggregate_tcs(wildcards):
@@ -113,7 +113,7 @@ rule gather_split_tcs:
     log:
         "logs/gather_split_TCs_{genesis_basin}_{tracks_year}_historical.log",
     script:
-        "scripts/concatenate_all_basins_tcs.py"
+        "../scripts/concatenate_all_basins_tcs.py"
 
 
 rule concatenate_all_years_tcs:
@@ -133,7 +133,7 @@ rule concatenate_all_years_tcs:
     log:
         "logs/concatenate_all_years_tcs_{genesis_basin}_historical.log",
     script:
-        "scripts/concatenate_all_years_tcs.py"
+        "../scripts/concatenate_all_years_tcs.py"
 
 
 rule all_no_cc_tcs:
@@ -146,12 +146,18 @@ rule concatenate_all_basins_tcs:
         expand(
             "tropcyc/{genesis_basin}/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{genesis_basin}_{start_period}_to_{end_period}_no_cc.hdf5",
             genesis_basin=TRACK_MODELS["ibtracs"]["genesis_basins"],
-            tc_res_str=tc_res_str, nsynth=nsynth,
-            start_period=start_period, end_period=end_period,
+            tc_res_str=tc_res_str,
+            nsynth=nsynth,
+            start_period=start_period,
+            end_period=end_period,
         ),
     output:
         tc_global_path("ibtracs", "no_cc"),
-    conda: "climada_env_TC"
-    resources: mem_mb_per_cpu=24000
-    log: "logs/concatenate_all_basins_tcs_ibtracs_no_cc.log"
-    script: "../scripts/concatenate_all_basins_tcs.py"
+    conda:
+        "climada_env_TC"
+    resources:
+        mem_mb_per_cpu=24000,
+    log:
+        "logs/concatenate_all_basins_tcs_ibtracs_no_cc.log",
+    script:
+        "../scripts/concatenate_all_basins_tcs.py"

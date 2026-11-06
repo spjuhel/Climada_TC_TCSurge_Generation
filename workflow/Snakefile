@@ -25,17 +25,20 @@ the wind field at a 0.008 degrees (~29 arcsec).
 Copyright (C) 2024  Samuel Juhel
 """
 
+
 configfile: "config/config.yaml"
+
 
 start_period = config["start"]
 end_period = config["end"]
 nsynth = config["nsynth"]
 tracks_year_range = list(range(start_period, end_period + 1))
-tc_res_str = int(config["centroids_resolution"] * 3600)
-surge_res_str = int(config["higher_res_surge"] * 3600)
+tc_res_str = config["centroids_resolution"]
+surge_res_str = config["higher_res_surge"]
 
 # {model_name: model_options}; see config sketch below
 TRACK_MODELS = config["track_models"]
+
 
 wildcard_constraints:
     track_model=r"ibtracs|storm",
@@ -45,6 +48,7 @@ wildcard_constraints:
     slr_year=r"no|20[2-9]0|21[0-5]0",
     split=r"\d+",
     climate_scenario=r"no_cc|(rcp26|rcp45|rcp60|rcp85)_(2100|20\d\d)",  # fixed 'rpc45'
+
 
 include: "rules/common.smk"
 include: "rules/ibtracs.smk"

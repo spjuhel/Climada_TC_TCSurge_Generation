@@ -10,8 +10,6 @@ Adapted from a script by Simona Meiler (2024-02-26).
 import logging
 from pathlib import Path
 
-import numpy as np
-
 from climada.hazard import Centroids, TCTracks, TropCyclone
 
 LOGGER = logging.getLogger(__name__)
@@ -42,7 +40,6 @@ def main(
     centroids_path,
     output_path,
     wind_model="H08",
-    event_freq=1/1000,
     time_step_h=1.0,
     max_memory_gb=14,
 ):
@@ -77,7 +74,6 @@ def main(
         model=wind_model,
         max_memory_gb=max_memory_gb,
     )
-    tc_hazard.intensity = np.full_like(tc_hazard.intensity, event_freq)
     tc_hazard.check()
 
     LOGGER.info("Writing hazard to %s", output_path)
@@ -95,7 +91,6 @@ if __name__ == "__main__":
         tracks_path=snakemake.input.tracks,
         centroids_path=snakemake.input.centroids,
         output_path=snakemake.output[0],
-        event_freq=snakemake.params.event_freq,
         wind_model=snakemake.params.wind_model,
         time_step_h=snakemake.params.time_step_h,
         max_memory_gb=snakemake.params.max_memory_gb,
