@@ -3,7 +3,8 @@
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there.
 
-# Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes                                                the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
+# Possible values are 'NA' (North Atlantic), 'SA' (South Atlantic), 'EP' (Eastern North Pacific, which includes
+# the Central Pacific region), 'WP' (Western North Pacific), 'SP' (South Pacific), 'SI' (South Indian), 'NI' (North Indian).
 
 """This pipeline generates tropical cyclone impacts and associate coastal surge impacts data
 using the Climada modeling plateform based on IBTrACS historical tropical cyclone tracks.
@@ -24,346 +25,28 @@ the wind field at a 0.008 degrees (~29 arcsec).
 Copyright (C) 2024  Samuel Juhel
 """
 
+configfile: "config/config.yaml"
+
 start_period = config["start"]
 end_period = config["end"]
 nsynth = config["nsynth"]
-tracks_year_range = list(range(config["start"], config["end"] + 1, 1))
+tracks_year_range = list(range(start_period, end_period + 1))
 tc_res_str = int(config["centroids_resolution"] * 3600)
 surge_res_str = int(config["higher_res_surge"] * 3600)
 
+# {model_name: model_options}; see config sketch below
+TRACK_MODELS = config["track_models"]
 
 wildcard_constraints:
+    track_model=r"ibtracs|storm",
     genesis_basin=r"[A-Z]+",
     tracks_year=r"[0-9]{4}",
     ssp=r"nossp|ssp119|ssp126|ssp245|ssp370|ssp585",
     slr_year=r"no|20[2-9]0|21[0-5]0",
     split=r"\d+",
-    climate_scenario=r"no_cc|(rcp26|rpc45|rcp60|rcp85)_(2100|20\d\d)",
+    climate_scenario=r"no_cc|(rcp26|rcp45|rcp60|rcp85)_(2100|20\d\d)",  # fixed 'rpc45'
 
-
-rule create_centroids:
-    """Creates global centroids grid at `centroid_resolution` resolution"""
-    output:
-        f"global_{tc_res_str}arcsec_centroids.hdf5",
-    params:
-        centroids_resolution=config["centroids_resolution"],
-    log:
-        "logs/create_centroids.log",
-    resources:
-        mem_mb_per_cpu=12000,
-    conda:
-        "climada_env_TC"
-    script:
-        "scripts/create_centroids.py"
-
-
-rule tracks_basin_year:
-    """Generate file with all tracks originating in `genesis_basin` for year `tracks_year`"""
-    output:
-        "tracks/{genesis_basin}/{tracks_year}/IBTracs_{genesis_basin}_{tracks_year}.hdf5",
-    params:
-        timestep=1,
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=8000,
-        runtime=240,
-    log:
-        "logs/find_tracks_{genesis_basin}_{tracks_year}.log",
-    script:
-        "scripts/find_tracks_basin_year.py"
-
-
-def synth_track_memb(wildcards, attempt):
-    return 1000 * (config["nsynth"] // 2) * attempt
-
-
-rule synth_tracks_basin_year:
-    """Generate file with `nsynth` synthetic tracks from historical ones in `genesis_basin` for year `tracks_year`"""
-    input:
-        "tracks/{genesis_basin}/{tracks_year}/IBTracs_{genesis_basin}_{tracks_year}.hdf5",
-    output:
-        f"tracks/{{genesis_basin}}/{{tracks_year}}/IBTracs_{nsynth}synth_{{genesis_basin}}_{{tracks_year}}.hdf5",
-    params:
-        nsynth=nsynth,
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=synth_track_memb,
-        runtime=240,
-    log:
-        "logs/generate_synths_tracks_{genesis_basin}_{tracks_year}.log",
-    script:
-        "scripts/generate_synths_tracks_basin_year.py"
-
-
-# Naming is not automagic in the script!!!
-checkpoint split_basin_year_tracks:
-    """Split synthetic tracks of a particular basin, year into files with at most `max_tracks_per_split` tracks"""
-    input:
-        tracks=f"tracks/{{genesis_basin}}/{{tracks_year}}/IBTracs_{nsynth}synth_{{genesis_basin}}_{{tracks_year}}.hdf5",
-    output:
-        directory("tracks/{genesis_basin}/{tracks_year}/synth_splits/"),
-    params:
-        max_tracks=config["max_tracks_per_split"],
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=8000,
-        runtime=240,
-    log:
-        "logs/split_synth_tracks_{genesis_basin}_{tracks_year}.log",
-    script:
-        "scripts/split_synth_tracks.py"
-
-
-def get_mb_for_split(wildcards, attempt):
-    return max((attempt - 1) * 64000, 20000)
-
-
-rule tcs_basin_year_split:
-    """Generate tropical cyclones from synthetic tracks (for a split file)"""
-    input:
-        tracks=f"tracks/{{genesis_basin}}/{{tracks_year}}/synth_splits/IBTracs_{nsynth}synth_{{genesis_basin}}_{{tracks_year}}_split_{{split}}.hdf5",
-        centroids=f"global_{tc_res_str}arcsec_centroids.hdf5",
-    output:
-        f"tropcyc/{{genesis_basin}}/no_cc/{{tracks_year}}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{genesis_basin}}_{{tracks_year}}_no_cc_split_{{split}}.hdf5",
-    params:
-        buf=5,
-        max_memory_gb=14,
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=get_mb_for_split,
-        runtime=480,
-    log:
-        "logs/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.log",
-    benchmark:
-        "benchmark/generate_TCs_{genesis_basin}_{tracks_year}_split_{split}.tsv"
-    script:
-        "scripts/generate_TCs_basin_year.py"
-
-
-def aggregate_tcs(wildcards):
-    checkpoint_output = checkpoints.split_basin_year_tracks.get(**wildcards).output[0]
-    return expand(
-        "tropcyc/{{genesis_basin}}/no_cc/{{tracks_year}}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{genesis_basin}}_{{tracks_year}}_no_cc_split_{split}.hdf5",
-        split=glob_wildcards(
-            os.path.join(
-                checkpoint_output,
-                f"IBTracs_{nsynth}synth_{{genesis_basin}}_{{tracks_year}}_split_{{split}}.hdf5",
-            )
-        ).split,
-        nsynth=nsynth,
-        tc_res_str=tc_res_str,
-    )
-
-
-rule gather_split_tcs:
-    input:
-        aggregate_tcs,
-    output:
-        f"tropcyc/{{genesis_basin}}/no_cc/{{tracks_year}}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{genesis_basin}}_{{tracks_year}}_no_cc.hdf5",
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=16000,
-        runtime=240,
-    log:
-        "logs/gather_split_TCs_{genesis_basin}_{tracks_year}_historical.log",
-    script:
-        "scripts/concatenate_all_basins_tcs.py"
-
-
-rule concatenate_all_years_tcs:
-    input:
-        expand(
-            "tropcyc/{{genesis_basin}}/no_cc/{tracks_year}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{genesis_basin}}_{tracks_year}_no_cc.hdf5",
-            tracks_year=tracks_year_range,
-            tc_res_str=tc_res_str,
-            nsynth=nsynth,
-        ),
-    output:
-        f"tropcyc/{{genesis_basin}}/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{genesis_basin}}_{start_period}_to_{end_period}_no_cc.hdf5",
-    resources:
-        mem_mb_per_cpu=24000,
-    conda:
-        "climada_env_TC"
-    log:
-        "logs/concatenate_all_years_tcs_{genesis_basin}_historical.log",
-    script:
-        "scripts/concatenate_all_years_tcs.py"
-
-
-rule concatenate_all_basins_tcs:
-    input:
-        expand(
-            "tropcyc/{genesis_basin}/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{genesis_basin}_{start_period}_to_{end_period}_no_cc.hdf5",
-            genesis_basin=config["genesis_basins"],
-            tc_res_str=tc_res_str,
-            nsynth=nsynth,
-            start_period=start_period,
-            end_period=end_period,
-        ),
-    output:
-        f"tropcyc/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_no_cc.hdf5",
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=24000,
-    log:
-        "logs/concatenate_all_basins_tcs_no_cc.log",
-    script:
-        "scripts/concatenate_all_basins_tcs.py"
-
-
-rule all_no_cc_tcs:
-    input:
-        f"tropcyc/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_no_cc.hdf5",
-
-
-rule apply_climate_change:
-    input:
-        tropcyc=f"tropcyc/no_cc/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_no_cc.hdf5",
-    output:
-        expand(
-            "tropcyc/{climate_scenario}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_{climate_scenario}.hdf5",
-            climate_scenario=[c for c in config["climate_scenarios"] if c != "no_cc"],
-            tc_res_str=tc_res_str,
-            nsynth=nsynth,
-            start_period=start_period,
-            end_period=end_period,
-        ),
-    resources:
-        mem_mb_per_cpu=24000,
-    params:
-        tc_res_str=tc_res_str,
-        nsynth=nsynth,
-        start_period=start_period,
-        end_period=end_period,
-    conda:
-        "climada_env_TC"
-    log:
-        "logs/apply_climate_change.log",
-    script:
-        "scripts/apply_climate_change.py"
-
-
-rule all_tcs:
-    input:
-        expand(
-            "tropcyc/{climate_scenario}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_{climate_scenario}.hdf5",
-            climate_scenario=config["climate_scenarios"],
-            tc_res_str=tc_res_str,
-            nsynth=nsynth,
-            start_period=start_period,
-            end_period=end_period,
-        ),
-
-def get_all_countries(haz, countries):
-    if countries == "all":
-        import country_converter as coco
-        cc = coco.CountryConverter()
-        haz = TropCyclone.from_hdf5(haz)
-        haz.centroids.set_region_id()
-        countries_tmp = cc.convert(haz.centroids.gdf["region_id"].unique(), to="ISO3", src="ISOnumeric")
-        countries = [c for c in countries_tmp if c != "not found"]
-    return countries
-
-checkpoint tcs_per_countries:
-    input:
-        global_haz=f"tropcyc/{{climate_scenario}}/tropcyc_{tc_res_str}arcsec_{nsynth}synth_all_basins_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
-    output:
-        directory("tropcyc/{{climate_scenario}}/by_country/")
-    params:
-        countries = lambda w, input : get_all_countries(input.global_haz, config["countries"]),
-        tc_res_str=tc_res_str,
-        nsynth=nsynth,
-        start_period=start_period,
-        end_period=end_period,
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=24000,
-    log:
-        "logs/get_countries_tcs_{climate_scenario}.log",
-    script:
-        "scripts/get_country_tc.py"
-
-def get_all_tcs_countries(wildcards):
-    countries_dir = checkpoints.tcs_per_countries.get(**wildcards).output[0]
-    countries = glob_wildcards(f"tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5").country
-    all_tcs_countries = expand("tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
-                                countries = countries,
-                                tc_res_str=tc_res_str,
-                                nsynth=nsynth,
-                                start_period=start_period,
-                                end_period=end_period)
-    return all_tcs_countries
-
-rule all_tcs_countries:
-    input: get_all_tcs_countries
-
-def get_mb_for_country_surge(wildcards, attempt):
-    return max((attempt - 1) * 64000, 24000)
-
-def use_slr(wildcards):
-    return wildcards.ssp != "nossp"
-
-rule surges_countries:
-    input:
-        tropcyc=f"tropcyc/{{climate_scenario}}/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_{{climate_scenario}}.hdf5",
-        slr=branch(
-            use_slr,
-            then=expand(
-                "{slr_data}/{{ssp}}/total_{{ssp}}_medium_confidence_values.nc",
-                slr_data=config["slr_data_path"],
-            ),
-        ),
-        dem=config["dem_topo_path"],
-    output:
-        f"surge/{{climate_scenario}}/by_country/surge_{surge_res_str}arcsec_{nsynth}synth_{{country}}_{{ssp}}_{{slr_year}}slr_{{climate_scenario}}.hdf5",
-    params:
-        higher_res=config["higher_res_surge"],
-    conda:
-        "climada_env_TC"
-    resources:
-        mem_mb_per_cpu=get_mb_for_country_surge,
-        runtime=240,
-    log:
-        "logs/generate_surges_{country}_{ssp}_{slr_year}slr_{climate_scenario}.log",
-    benchmark:
-        "benchmark/generate_surge_{country}_{ssp}_{slr_year}slr_{climate_scenario}.tsv"
-    script:
-        "scripts/generate_TCs_surges_country.py"
-
-
-def get_all_surges_countries(wildcards):
-#    countries_dir = checkpoints.tcs_per_countries.get(**wildcards).output[0]
-    countries = glob_wildcards(f"tropcyc/no_cc/by_country/tropcyc_{tc_res_str}arcsec_{nsynth}synth_{{country}}_{start_period}_to_{end_period}_no_cc.hdf5").country
-    all_surges_countries = expand(
-            "surge/{climate_scenario}/by_country/surge_{surge_res_str}arcsec_{nsynth}synth_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-            country=countries,
-            climate_scenario=config["climate_scenarios"],
-            ssp=config["slr_ssp"],
-            slr_year=config["slr_years"],
-            surge_res_str=surge_res_str,
-            nsynth=nsynth,
-            start_period=start_period,
-            end_period=end_period,
-        ) + expand(
-            "surge/{climate_scenario}/by_country/surge_{surge_res_str}arcsec_{nsynth}synth_{country}_{ssp}_{slr_year}slr_{climate_scenario}.hdf5",
-            country=countries,
-            climate_scenario=config["climate_scenarios"],
-            ssp="nossp",
-            slr_year="no",
-            surge_res_str=surge_res_str,
-            nsynth=nsynth,
-            start_period=start_period,
-            end_period=end_period,
-        )
-    return all_surges_countries
-
-rule all_surges_countries:
-    input:
-        get_all_surges_countries
+include: "rules/common.smk"
+include: "rules/ibtracs.smk"
+include: "rules/storm.smk"
+include: "rules/downstream.smk"
