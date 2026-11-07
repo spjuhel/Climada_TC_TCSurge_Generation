@@ -12,7 +12,7 @@ dem_topo_path: "/cluster/project/climate/sjuhel/climada/data/elevation/SRTM15+V2
 max_tracks_per_split: 100
 max_tcs_per_split: 5
 
-centroids_resolution: 150
+centroids_resolution: 300
 
 track_models:
   ibtracs:
@@ -24,3 +24,4 @@ track_models:
     basins: [EP, NA, NI, SI, SP, WP]
     ensemble_members: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     climate_scenarios: [no_cc]
+    time_step_h: 0.5
