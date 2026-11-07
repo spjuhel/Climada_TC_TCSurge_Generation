@@ -129,7 +129,7 @@ rule storm_tcs_basin_ens_example:
 rule storm_tcs_basin:
     """Wind fields from STORM tracks for one basin"""
     input:
-        tracks = expand("tropcyc/storm/no_cc/{{genesis_basin}}/member_{ens}/STORM_{{tc_res_str}}arcsec_{{genesis_basin}}_{ens}_no_cc.hdf5", ens=config["storm"]["ensemble_members"])
+        tracks = expand("tropcyc/storm/no_cc/{{genesis_basin}}/member_{ens}/STORM_{{tc_res_str}}arcsec_{{genesis_basin}}_{ens}_no_cc.hdf5", ens=config["track_model"]["storm"]["ensemble_members"])
     output:
         "tropcyc/storm/no_cc/{genesis_basin}/STORM_{tc_res_str}arcsec_{genesis_basin}_no_cc.hdf5",
     conda:
@@ -150,6 +150,6 @@ rule storm_tcs_basin_example:
 rule storm_tcs:
     input:
         expand("tropcyc/storm/no_cc/{genesis_basin}/STORM_{tc_res_str}arcsec_{genesis_basin}_no_cc.hdf5",
-               genesis_basin=config["storm"]["basins"],
+               genesis_basin=config["track_model"]["storm"]["basins"],
                tc_res_str=config["centroids_resolution"]
                )
