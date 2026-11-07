@@ -79,7 +79,7 @@ rule storm_tcs_basin_split_ens:
         "tropcyc/storm/no_cc/{genesis_basin}/member_{ens}/splits/STORM_{tc_res_str}arcsec_{genesis_basin}_{ens}_no_cc_split_{split}.hdf5",
     params:
         wind_model=TRACK_MODELS["storm"]["wind_model"],
-        time_step_h=config["storm"]["time_step_h"],
+        time_step_h=config["track_model"]["storm"]["time_step_h"],
         max_memory_gb=14,
         buffer=5,
     conda:
