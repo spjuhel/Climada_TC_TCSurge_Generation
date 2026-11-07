@@ -85,7 +85,7 @@ rule storm_tcs_basin_split_ens:
     conda:
         "../envs/climada_env.yaml"
     resources:
-        mem_mb_per_cpu=get_mb_for_split,
+        mem_mb_per_cpu=4000,
         runtime=480,
     log:
         "logs/storm_tcs_{tc_res_str}_{genesis_basin}_{ens}_{split}.log",
@@ -114,7 +114,7 @@ rule gather_split_storm_tcs:
     conda:
         "../envs/climada_env.yaml"
     resources:
-        mem_mb_per_cpu=16000,
+        mem_mb_per_cpu=8000,
         runtime=240,
     log:
         "logs/gather_split_storm_TCs_{genesis_basin}_{ens}_{tc_res_str}arcsec.log",
