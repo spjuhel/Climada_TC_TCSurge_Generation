@@ -69,7 +69,7 @@ checkpoint split_hdf5_tracks:
         "../scripts/split_storm_synth_tracks.py"
 
 def get_mem_mb_for_split(wildcards, attempt):
-    return 18000 * attempt
+    return 8000 * attempt
 
 def get_mem_gb_for_split(wildcards, attempt):
     return 7 * attempt
