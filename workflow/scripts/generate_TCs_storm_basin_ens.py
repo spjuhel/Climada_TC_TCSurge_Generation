@@ -81,5 +81,5 @@ if __name__ == "__main__":
         buffer=snakemake.params.buffer,
         wind_model=snakemake.params.wind_model,
         temp_res=snakemake.params.time_step_h,
-        max_memory_gb=snakemake.params.max_memory_gb,
+        max_memory_gb=(snakemake.resources.get("mem_mb_per_cpu")-2000)/10,
     )
