@@ -31,7 +31,7 @@ def storm_tracks_file(wildcards):
         f"STORM_DATA_IBTRACS_{wildcards.genesis_basin}_1000_YEARS_{wildcards.ens}.txt",
     )
 
-rule storm_tracks_basin:
+rule generate_hdf5_tracks_from_txt:
     """Generate file with all tracks originating in `genesis_basin` for year `tracks_year`"""
     input:
         tracks=storm_tracks_file,
@@ -49,7 +49,7 @@ rule storm_tracks_basin:
     script:
         "../scripts/find_tracks_storm_basin.py"
 
-checkpoint storm_split_basin_tracks:
+checkpoint split_hdf5_tracks:
     """Split tracks of a particular basin into files with at most `max_tracks_per_split` tracks"""
     input:
         tracks="tracks/storm/{genesis_basin}/member_{ens}/STORM_{genesis_basin}_{ens}.hdf5",
@@ -69,7 +69,7 @@ checkpoint storm_split_basin_tracks:
         "../scripts/split_storm_synth_tracks.py"
 
 
-rule storm_tcs_basin_split_ens:
+rule compute_windfield_for_split:
     """Wind fields from STORM tracks for one basin and ensemble member"""
     input:
         out_directory="tracks/storm/{genesis_basin}/member_{ens}/splits/",
@@ -95,7 +95,7 @@ rule storm_tcs_basin_split_ens:
         "../scripts/generate_TCs_storm_basin_ens.py"
 
 def aggregate_storm_tcs(wildcards):
-    checkpoint_output = checkpoints.storm_split_basin_tracks.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.split_hdf5_tracks.get(**wildcards).output[0]
     return expand(
         "tropcyc/storm/no_cc/{{genesis_basin}}/member_{{ens}}/splits/STORM_{{tc_res_str}}arcsec_{{genesis_basin}}_{{ens}}_no_cc_split_{split}.hdf5",
         split=glob_wildcards(
