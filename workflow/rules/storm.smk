@@ -68,6 +68,12 @@ checkpoint split_hdf5_tracks:
     script:
         "../scripts/split_storm_synth_tracks.py"
 
+def get_mem_mb_for_split(wildcards, attempt):
+    return 8000 * attempt
+
+def get_mem_gb_for_split(wildcards, attempt):
+    return 7 * attempt
+
 
 rule compute_windfield_for_split:
     """Wind fields from STORM tracks for one basin and ensemble member"""
@@ -80,12 +86,12 @@ rule compute_windfield_for_split:
     params:
         wind_model=TRACK_MODELS["storm"]["wind_model"],
         time_step_h=config["track_models"]["storm"]["time_step_h"],
-        max_memory_gb=14,
+        max_memory_gb=get_mem_gb_for_split,
         buffer=5,
     conda:
         "../envs/climada_env.yaml"
     resources:
-        mem_mb_per_cpu=4000,
+        mem_mb_per_cpu=get_mem_mb_for_split,
         runtime=480,
     log:
         "logs/storm_tcs_{tc_res_str}_{genesis_basin}_{ens}_{split}.log",
