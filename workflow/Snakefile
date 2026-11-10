@@ -51,6 +51,6 @@ wildcard_constraints:
 
 
 include: "rules/common.smk"
-include: "rules/ibtracs.smk"
+#include: "rules/ibtracs.smk"
 include: "rules/storm.smk"
-include: "rules/downstream.smk"
+#include: "rules/downstream.smk"
