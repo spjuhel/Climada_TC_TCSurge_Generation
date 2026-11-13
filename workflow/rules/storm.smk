@@ -113,6 +113,9 @@ def aggregate_storm_tcs(wildcards):
         ).split
     )
 
+def get_mb_for_gather(wildcards, attempt):
+    return attempt * 8000
+
 rule gather_split_storm_tcs:
     input:
         tracks=aggregate_storm_tcs,
@@ -121,7 +124,7 @@ rule gather_split_storm_tcs:
     conda:
         "../envs/climada_env.yaml"
     resources:
-        mem_mb_per_cpu=lambda wc, attempt: attempt * 8000,
+        mem_mb_per_cpu=get_mb_for_gather,
         runtime=240,
     log:
         "logs/gather_split_storm_TCs_{genesis_basin}_{ens}_{tc_res_str}arcsec.log",
